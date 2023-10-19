@@ -17,7 +17,7 @@ https://blog.csdn.net/fish332/article/details/114178510
 ## 3. 开发进度
 1. v1: 基本的GUI界面、备份和恢复函数 done
 
-   v1.1: GUI界面的优化
+   v1.1: GUI界面的优化: 
 2. 
 
 ## 4. 技术栈

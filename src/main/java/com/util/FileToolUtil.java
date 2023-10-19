@@ -2,6 +2,7 @@ package com.util;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import javafx.scene.control.TextField;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -45,7 +46,7 @@ public class FileToolUtil {
     // 恢复单个文件
     public static void fileRestoreSingle(FileInputStream is, String resFilePath, int fileLen) throws IOException {
         File resFile = new File(resFilePath);
-        fileExistEval(resFile);
+        fileExistEval(resFile, true);
         FileOutputStream os = new FileOutputStream(resFile);
 
         byte[] tmpData = new byte[tmpDataLen];
@@ -67,7 +68,7 @@ public class FileToolUtil {
         File jsonFile = new File(jsonPath);
         try {
             // 验证json文件是否存在，不存在且创建失败则直接返回
-            if(!fileExistEval(jsonFile))
+            if(!fileExistEval(jsonFile, true))
                 return;
 
             // 写入json文件
@@ -89,15 +90,21 @@ public class FileToolUtil {
     }
 
     // 验证文件是否存在，不存在则创建
-    public static boolean fileExistEval(File file) throws IOException {
+    public static boolean fileExistEval(File file, boolean create) throws IOException {
         boolean flag=true;
-        if(!file.exists()){
+        if(file.exists()){
+            return true;
+        }
+        else if(create){
             String dir = file.getParent();
             flag = dirExistEval(new File(dir));
             if(flag)
                 flag = file.createNewFile();;
+            return flag;
         }
-        return flag;
+        else{
+            return false;
+        }
     }
 
     // 验证目录是否存在，不存在则创建
@@ -112,4 +119,6 @@ public class FileToolUtil {
     public static String fileConcat(String dir, String file){
         return Paths.get(dir, file).toString();
     }
+
+    public static boolean tfIsEmpty(TextField tf){return tf.getText().isEmpty();}
 }

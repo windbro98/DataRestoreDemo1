@@ -1,5 +1,6 @@
 package com;
 
+import atlantafx.base.controls.Notification;
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
 import com.domain.BackManager;
@@ -9,20 +10,24 @@ import com.ui.PageFactory;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.SplitPane;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
+import static com.util.FileToolUtil.fileExistEval;
+import static com.util.FileToolUtil.tfIsEmpty;
 import static com.util.StyleUtil.*;
 import static com.util.DataUtils.getIndexForArray;
 
 public class Main extends Application {
+    StackPane rootSp = new StackPane();
     private int currentMenuId=-1;
     private int tmpMenuId=-1;
     String[] leftMenuInfo = {"备份", "恢复"};
@@ -59,7 +64,8 @@ public class Main extends Application {
 
         initLeftMenu(leftMenu, leftMenuInfo, rightPages, sp, menuBtns);
 
-        Scene scene = new Scene(sp);
+        rootSp.getChildren().add(sp);
+        Scene scene = new Scene(rootSp);
         stage.setScene(scene);
         stage.show();
     }
@@ -78,8 +84,7 @@ public class Main extends Application {
                     Button btnTmp = menuBtns[tmpMenuId];
                     setNormalMenu(btnTmp);
                 }
-                sp.getItems().remove(1);
-                sp.getItems().add(1, page);
+                sp.getItems().set(1, page);
             });
             btn.setOnMouseMoved(mouseEvent -> {
                 setHoverMenu(btn);
@@ -109,10 +114,26 @@ public class Main extends Application {
                     hb = (HBox) rightPages[i].getChildren().get(2);
                     btnSubmit = (Button) hb.getChildren().get(0);
                     btnSubmit.setOnMouseClicked(mouseEvent -> {
-                        srcM = new SrcManager(tfSrc.getText());
-                        backM = new BackManager(tfBackupSave.getText(), "", "");
-                        String backFilePath = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir(), srcM.getSrcSize());
-                        backM.setBackFilePath(backFilePath);
+                        if(tfIsEmpty(tfSrc) || tfIsEmpty(tfBackupSave)){
+                            Alert errorMsg = createErrorAlert("源路径或备份路径为空！");
+                            errorMsg.show();
+                        } else {
+                                Alert confirmMsg = createConfirmAlert("是否确认信息");
+                                Optional<ButtonType> res = confirmMsg.showAndWait();
+                            if(res.get().getText().equals("Yes")){
+                                try {
+                                    srcM = new SrcManager(tfSrc.getText());
+                                    backM = new BackManager(tfBackupSave.getText(), "", "");
+                                    String backFilePath = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir(), srcM.getSrcSize());
+                                    backM.setBackFilePath(backFilePath);
+                                    createPopup("文件备份成功", rootSp);
+                                    tfSrc.clear();
+                                    tfBackupSave.clear();
+                                } catch (InterruptedException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
                     });
                     break;
                 case "恢复":
@@ -120,11 +141,34 @@ public class Main extends Application {
                     hb = (HBox) rightPages[i].getChildren().get(2);
                     btnSubmit = (Button) hb.getChildren().get(0);
                     btnSubmit.setOnMouseClicked(mouseEvent -> {
-                        resM = new ResManager(tfRestore.getText(), "", "");
-                        try {
-                            resM.fileRestore(tfBackupSel.getText());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        if(tfIsEmpty(tfBackupSel) || tfIsEmpty(tfRestore)){
+                            Alert errorMsg = createErrorAlert("备份路径或恢复路径为空！");
+                            errorMsg.show();
+                        } else {
+                            try {
+                                File jsonBackup = new File(tfBackupSel.getText()+".json");
+                                if (!fileExistEval(jsonBackup, false)) {
+                                    Alert errorMsg = createErrorAlert("备份文件错误！");
+                                    tfBackupSel.clear();
+                                    errorMsg.show();
+                                } else{
+                                    Alert confirmMsg = createConfirmAlert("是否确认信息");
+                                    Optional<ButtonType> res = confirmMsg.showAndWait();
+                                    if(res.get().getText().equals("Yes")){
+                                        resM = new ResManager(tfRestore.getText(), "", "");
+                                        try {
+                                            resM.fileRestore(tfBackupSel.getText());
+                                            createPopup("文件恢复成功", rootSp);
+                                            tfBackupSel.clear();
+                                            tfRestore.clear();
+                                        } catch (IOException | InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
+                                }
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     });
                     break;
