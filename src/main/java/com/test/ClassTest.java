@@ -9,9 +9,9 @@ import java.util.Arrays;
 
 public class ClassTest {
     public static void main(String[] args) throws IOException {
-        String srcDir = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalData";
-        String backDir = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\BackupData";
-        String resDir = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\RestoreData";
+        String srcDir = "OriginalData";
+        String backDir = "BackupData";
+        String resDir = "RestoreData";
         String compType = "";
         String encryType = "";
 
