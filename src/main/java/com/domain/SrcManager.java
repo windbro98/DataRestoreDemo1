@@ -72,10 +72,10 @@ public class SrcManager {
 
         fileWalkLoop(srcDir, filePathSet);
         String rDir;
-        if(srcDir.endsWith("/") || srcDir.endsWith("\\"))
+        if(srcDir.endsWith("/") || srcDir.endsWith("/"))
             rDir = srcDir;
         else
-            rDir = srcDir+'\\';
+            rDir = srcDir+'/';
         filePathSet.replaceAll(s -> s.replace(rDir, ""));
         return filePathSet;
     }

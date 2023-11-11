@@ -28,7 +28,7 @@ public class FileToolUtil {
             if (f.isFile())
                 filePathSet.add(filePath);
             if (f.isDirectory())
-                fileWalkLoop(filePath + '\\', filePathSet);
+                fileWalkLoop(filePath + '/', filePathSet);
         }
     }
 
