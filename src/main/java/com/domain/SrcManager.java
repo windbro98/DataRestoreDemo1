@@ -72,6 +72,7 @@ public class SrcManager {
 
         fileWalkLoop(srcDir, filePathSet);
         String rDir;
+        // 文件路径处理
         if(srcDir.endsWith("/") || srcDir.endsWith("\\"))
             rDir = srcDir;
         else
