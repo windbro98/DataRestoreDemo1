@@ -32,7 +32,7 @@ public class FileToolUtil {
         }
     }
 
-    // 复制文件
+    // 文件恢复
     public static int fileCopy(InputStream is, OutputStream os) throws IOException {
         int tmpLen=-1, fileLen=0;
         byte[] tmpData = new byte[tmpDataLen];
@@ -43,7 +43,7 @@ public class FileToolUtil {
         return fileLen;
     }
 
-    // 恢复单个文件
+    // 单个文件恢复
     public static void fileRestoreSingle(FileInputStream is, String resFilePath, int fileLen) throws IOException {
         File resFile = new File(resFilePath);
         fileExistEval(resFile, true);
@@ -89,7 +89,7 @@ public class FileToolUtil {
         return jo;
     }
 
-    // 验证文件是否存在，不存在则创建
+    // 判断文件是否存在，不存在则创建
     public static boolean fileExistEval(File file, boolean create) throws IOException {
         boolean flag=true;
         if(file.exists()){
@@ -107,7 +107,7 @@ public class FileToolUtil {
         }
     }
 
-    // 验证目录是否存在，不存在则创建
+    // 判断目录是否存在，不存在则创建
     public static boolean dirExistEval(File dir){
         boolean flag=true;
         if(!dir.exists())
@@ -120,5 +120,6 @@ public class FileToolUtil {
         return Paths.get(dir, file).toString();
     }
 
+    // 判断文本框是否为空
     public static boolean tfIsEmpty(TextField tf){return tf.getText().isEmpty();}
 }

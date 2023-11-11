@@ -9,14 +9,16 @@ import java.util.List;
 
 import static com.util.FileToolUtil.fileWalkLoop;
 
+// 源目录管理器
 public class SrcManager {
-    private String srcDir;
-    private int[] srcSize;
+    private String srcDir; // 源目录路径
+    private int[] srcSize; // 源目录各个文件的大小
 
-    public int[] getSrcSize() {
-        return srcSize;
-    }
+    private List<String> filePathSet; // 源目录中所有文件的路径集合
+    private filter fileFilter; // 源目录文件过滤器
+    private List<String> selFilePath; // 筛选后的源目录文件路径集合
 
+    // 源目录管理器初始化
     public SrcManager(String srcDir) {
         this.srcDir = srcDir;
         this.filePathSet = fileWalk(srcDir);
@@ -25,6 +27,15 @@ public class SrcManager {
         this.selFilePath = fileSelect(this.filePathSet, this.fileFilter);
         this.srcSize = new int[this.selFilePath.size()];
     }
+
+    public SrcManager() {
+    }
+
+    // 获取源目录管理器的属性
+    public int[] getSrcSize() {
+        return srcSize;
+    }
+
 
     public String getSrcDir() {
         return srcDir;
@@ -42,13 +53,6 @@ public class SrcManager {
         return selFilePath;
     }
 
-    private List<String> filePathSet;
-    private filter fileFilter;
-    private List<String> selFilePath;
-
-    public SrcManager() {
-    }
-
     // 过滤器
     private static class filter{
         String[] type;
@@ -58,10 +62,11 @@ public class SrcManager {
         String Time;
     }
 
+    // 遍历源目录中所有文件
     private static List<String> fileWalk(String srcDir){
         List<String> filePathSet = new ArrayList<String>();
         File src = new File(srcDir);
-        // 判断源目录是否存在
+        // 源目录存在性验证
         if (!src.isDirectory())
             return filePathSet;
 
@@ -75,7 +80,8 @@ public class SrcManager {
         return filePathSet;
     }
 
-    // todo: 过滤器的具体涉及
+    // todo: 过滤器的具体设计
+    // 源目录文件筛选
     private static List<String> fileSelect(List<String> filePathSet, filter fileFilter){
         List<String> selFilePath;
         selFilePath = filePathSet;

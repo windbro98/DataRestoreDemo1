@@ -10,23 +10,28 @@ import java.util.List;
 import static com.util.FileToolUtil.*;
 
 /**
- * 压缩、加密方式的默认赋值，使用
+    todo: 压缩、加密方式的默认赋值，使用
  */
+// 备份目录管理器
 public class BackManager {
-    private String backDir;
-    private String compType;
-    private String encryType;
-    private String backFilePath;
+    private String backDir; // 备份文件目录
+    private String compType; // 压缩方式
+    private String encryType; // 编码方式
+    private String backFilePath; // 备份文件路径
 
     public String getBackFilePath() {
         return backFilePath;
     }
     // todo: 设置压缩和加密的默认值
+    // 备份文件管理器初始化
     public BackManager(String backDir, String compType, String encryType) {
         this.backDir = backDir;
         this.compType = compType;
         this.encryType = encryType;
     }
+    public BackManager() {
+    }
+    // 属性的设置与获取
     public void setBackFilePath(String backFilePath) {
         this.backFilePath = backFilePath;
     }
@@ -43,25 +48,24 @@ public class BackManager {
         return encryType;
     }
 
-    public BackManager() {
-    }
-
-    public String fileExtract(List<String> filePathSet, String srcDir, int[] srcSize) {
-        String backFilePath = "";
+    // 从源目录中提取并生成备份文件
+    public boolean fileExtract(List<String> filePathSet, String srcDir, int[] srcSize) {
+        backFilePath = "";
         File back = new File(this.backDir);
-        // 判断目的目录是否存在，不存在且创建失败则直接返回
+        // 备份目录存在性验证，否则直接返回
         if(!dirExistEval(back))
-            return backFilePath;
+            return false;
 
         InputStream is = null;
         OutputStream os = null;
         int fileNum = filePathSet.size();
         LinkedHashMap<String, String> metaMap = new LinkedHashMap<String, String>();
-        // 根据当前时间，为备份文件命名
+        // 备份文件命名，以备份时间为名
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         Calendar calendar = Calendar.getInstance();
         backFilePath = fileConcat(this.backDir, df.format(calendar.getTime()));
         // 缓存容器
+        // todo: 将这里页面化
         try {
             os = new FileOutputStream(backFilePath);
             // 遍历所有源文件，并复制到备份文件中
@@ -75,9 +79,10 @@ public class BackManager {
             throw new RuntimeException(e);
         }
 
+        // 将文件原数据写入json文件
         writeJson(backFilePath+".json", metaMap);
 
-        return backFilePath;
+        return true;
     }
 
     private void fileCompression(){

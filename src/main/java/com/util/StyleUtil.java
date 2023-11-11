@@ -34,6 +34,7 @@ public class StyleUtil {
         btn.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
     }
 
+    // 信息确认
     public static Alert createConfirmAlert (String content){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("确认信息");
@@ -46,6 +47,7 @@ public class StyleUtil {
         return alert;
     }
 
+    // 错误警报
     public static Alert createErrorAlert(String content){
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("发生错误");
@@ -57,6 +59,7 @@ public class StyleUtil {
         return alert;
     }
 
+    // 创建弹出窗口
     public static void createPopup(String content, StackPane rootSp) throws InterruptedException {
         Notification msg = new Notification(content, new FontIcon(Material2OutlinedAL.HELP_OUTLINE));
         msg.getStyleClass().addAll(Styles.ACCENT, Styles.ELEVATED_1);
