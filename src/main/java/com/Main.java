@@ -175,38 +175,24 @@ public class Main extends Application {
                             Alert errorMsg = createErrorAlert("备份路径或恢复路径为空！");
                             errorMsg.show();
                         } else {
-                            try {
-                                // 获取保存元数据的json文件
-                                File jsonBackup = new File(tfBackupSel.getText()+".json");
-                                // 错误：备份文件不存在
-                                if (!fileExistEval(jsonBackup, false)) {
-                                    Alert errorMsg = createErrorAlert("备份文件错误！");
-                                    tfBackupSel.clear();
-                                    errorMsg.show();
-                                } else{
-                                    // 信息确认窗口
-                                    Alert confirmMsg = createConfirmAlert("是否确认信息");
-                                    Optional<ButtonType> res = confirmMsg.showAndWait();
-                                    if(res.get().getText().equals("Yes")){
-                                        // 恢复文件管理器初始化
-                                        resM = new ResManager(tfRestore.getText(), "", "");
-                                        try {
-                                            // 恢复备份文件
-                                            resM.fileRestore(tfBackupSel.getText());
-                                            // 提示窗口: 恢复成功
-                                            createPopup("文件恢复成功", rootSp);
-                                            tfBackupSel.clear();
-                                            tfRestore.clear();
-                                        } catch (IOException | InterruptedException e) {
-                                            throw new RuntimeException(e);
-                                        }
+                                // 信息确认窗口
+                                Alert confirmMsg = createConfirmAlert("是否确认信息");
+                                Optional<ButtonType> res = confirmMsg.showAndWait();
+                                if(res.get().getText().equals("Yes")){
+                                    // 恢复文件管理器初始化
+                                    resM = new ResManager(tfRestore.getText(), "", "");
+                                    try {
+                                        // 恢复备份文件
+                                        resM.fileRestore(tfBackupSel.getText());
+                                        // 提示窗口: 恢复成功
+                                        createPopup("文件恢复成功", rootSp);
+                                        tfBackupSel.clear();
+                                        tfRestore.clear();
+                                    } catch (IOException | InterruptedException e) {
+                                        throw new RuntimeException(e);
                                     }
                                 }
-                            } catch (IOException e) {
-                                // 错误：超时
-                                throw new RuntimeException(e);
                             }
-                        }
                     });
                     break;
             }
