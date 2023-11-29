@@ -17,18 +17,18 @@ public class ClassTest {
 
         SrcManager srcM = new SrcManager(srcDir);
         BackManager backM = new BackManager(backDir, compType, encryType);
-//        ResManager resM = new ResManager(resDir, compType, encryType);
-//        System.out.println("所有源文件相对路径：");
-//        System.out.println(srcM.getSelFilePath());
+        ResManager resM = new ResManager(resDir, compType, encryType);
+        System.out.println("所有源文件相对路径：");
+        System.out.println(srcM.getSelFilePath());
 //
-        backM.fileExtract(srcM.getFilePathSet(), srcDir);
-//        String backFilePath = backM.getBackFilePath();
-//        System.out.println("各个源文件大小：");
-//        System.out.println(Arrays.toString(srcM.getSrcSize()));
-//        backM.setBackFilePath(backFilePath);
-//        System.out.println("备份文件位置：");
-//        System.out.println(backFilePath);
-//
-//        resM.fileRestore(backFilePath);
+        backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
+        String backFilePath = backM.getBackFilePath();
+        System.out.println("各个源文件大小：");
+        System.out.println(Arrays.toString(srcM.getSrcSize()));
+        backM.setBackFilePath(backFilePath);
+        System.out.println("备份文件位置：");
+        System.out.println(backFilePath);
+
+        resM.fileRestore(backFilePath);
     }
 }

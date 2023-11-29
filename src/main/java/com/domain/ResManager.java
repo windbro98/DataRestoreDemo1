@@ -30,13 +30,12 @@ public class ResManager {
 
     // 备份文件恢复
     public void fileRestore(String backFilePath) throws IOException {
-        // 文件元数据提取
-        String backJsonPath = backFilePath+".json";
-        JSONObject metaJson = readJson(backJsonPath);
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
-        for(String key : metaJson.keySet()){
+
+        while(is.available()>0)
+        {
             fileRestoreSingle(is, this.resDir);
         }
     }

@@ -60,7 +60,6 @@ public class BackManager {
         InputStream is = null;
         OutputStream os = null;
         int fileNum = filePathSet.size();
-        LinkedHashMap<String, String> metaMap = new LinkedHashMap<String, String>();
         // 备份文件命名，以备份时间为名
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         Calendar calendar = Calendar.getInstance();
@@ -81,15 +80,10 @@ public class BackManager {
                 }
                 else
                     dirCopy(os, inFilePath, fileType);
-//                srcSize[i] = fileCopy(is, os, inFilePath);
-//                metaMap.put(inFilePath, ""+srcSize[i]);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        // 将文件原数据写入json文件
-//        writeJson(this.backFilePath+".json", metaMap);
 
         return true;
     }

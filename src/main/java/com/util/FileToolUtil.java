@@ -37,7 +37,7 @@ public class FileToolUtil {
             File f = new File(filePath);
             filePathSet.add(filePath);
             if (f.isDirectory())
-                fileWalkLoop(filePath + '/', filePathSet);
+                fileWalkLoop(filePath + '\\', filePathSet);
         }
     }
 
@@ -56,7 +56,7 @@ public class FileToolUtil {
             int crcCode=0;
             tailPage = (is.available()>0) ? 0 : 1;
             buildHead(headPage, fileType, tailPage, dataStart, dataLen, crcCode);
-            writeFrame(os);
+            writePage(os);
             headPage = 0;
             dataStart = 0;
         }
@@ -81,14 +81,14 @@ public class FileToolUtil {
             fileNameStart = copyFileName(dirBytes, fileNameStart);
             buildHead(headPage, fileType, tailPage, fileNameLen, dataLen, crcCode);
             if(!(fileType==1 && fileNameStart<0))
-                writeFrame(os);
+                writePage(os);
         }
 
         // 返回该帧下一个空字节的索引
         return -fileNameStart;
      }
 
-     public static void writeFrame(OutputStream os) throws IOException {
+     public static void writePage(OutputStream os) throws IOException {
         os.write(tmpHead, 0, tmpHeadLen);
         os.write(tmpData, 0, tmpDataLen);
         Arrays.fill(tmpHead, (byte)0);
@@ -144,6 +144,7 @@ public class FileToolUtil {
 
         // 获取恢复文件名
         while(headDecode[0]==1){
+            // todo: 替换掉所有的tmpHead[1], 将其翻译为实际的长度
             is.read(bufferByte, 0, tmpHead[1]);
             if(fileNameByte != null){
                 int prevLen = fileNameByte.length;
@@ -169,6 +170,7 @@ public class FileToolUtil {
         // 如果该对象是目录，直接创建并退出
         if(headDecode[1]==0){
             dirExistEval(resFile);
+            is.read(bufferByte, 0, tmpDataLen-headDecode[signalNum]);
             return;
         }
         // 如果该对象是文件，则准备读取数据
@@ -179,8 +181,10 @@ public class FileToolUtil {
             os.write(bufferByte, 0, headDecode[signalNum+1]);
             headDecode = readHead(is);
         };
-        is.read(bufferByte, 0, headDecode[signalNum+1]);// 尾页面
-        os.write(bufferByte, 0, headDecode[signalNum+1]);
+        // 尾页面
+        // 尾页面的所有数据由三部分组成：文件名+文件数据+空白
+        is.read(bufferByte, 0, tmpDataLen-headDecode[signalNum]);
+        os.write(bufferByte, 0, headDecode[signalNum+1]); //
         return;
     }
 
@@ -256,7 +260,7 @@ public class FileToolUtil {
     // 目录文件与文件名拼接
     public static String fileConcat(String dir, String file){
 //        return Paths.get(dir, file).toString();
-        return dir + '/' + file;
+        return dir + '\\' + file;
     }
 
     // 判断文本框是否为空
