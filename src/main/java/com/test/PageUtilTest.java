@@ -7,7 +7,7 @@ import static com.util.FileToolUtil.*;
 public class PageUtilTest {
     public static void main(String[] args) throws IOException {
 //        // 备份测试
-        String inFileName1 = "ZhuLou.jpg";
+        String inFileName1 = "java学习笔记1.pdf";
         String srcRoot = "OriginalData";
         String inFilePath1 = fileConcat(srcRoot, inFileName1);
         String backFilePath = "BackupData/backup";
@@ -18,8 +18,6 @@ public class PageUtilTest {
 //         恢复测试
         String resRoot = "RestoreData";
         FileInputStream backIs = new FileInputStream("BackupData/backup");
-        String resFilePath = "D:/learning_programs/java_programs/DataRestoreDemo1/RestoreData/ZhuLou.jpg";
-        int fileLen = 0;
         fileRestoreSingle(backIs, resRoot);
     }
 }

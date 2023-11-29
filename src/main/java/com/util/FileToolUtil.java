@@ -179,7 +179,8 @@ public class FileToolUtil {
             os.write(bufferByte, 0, headDecode[signalNum+1]);
             headDecode = readHead(is);
         };
-        os.write(bufferByte, 0, headDecode[signalNum+1]); // 尾页面
+        is.read(bufferByte, 0, headDecode[signalNum+1]);// 尾页面
+        os.write(bufferByte, 0, headDecode[signalNum+1]);
         return;
     }
 
