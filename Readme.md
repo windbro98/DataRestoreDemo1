@@ -7,6 +7,10 @@ https://blog.csdn.net/fish332/article/details/114178510
 
 （建议搜索：java文件备份）文件备份参考
 
+![img.png](img.png)
+
+IPv4报文
+
 ### 参考库
 
 1. 前端GUI：swing
@@ -31,6 +35,7 @@ https://blog.csdn.net/fish332/article/details/114178510
 7. 感知用户**文件变化**，进行自动备份
 8. **jsonPath可以学习，用于筛选过程**
 9. 开发GUI界面 (basically done)
+10. https://blog.csdn.net/Cguoer/article/details/122588595 (java实现循环校验CRC)
 
 ### 现存问题
 1. 各种exception之间的逻辑关系（基本放弃解决）

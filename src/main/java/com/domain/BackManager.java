@@ -1,6 +1,8 @@
 package com.domain;
 
 import java.io.*;
+import java.io.File;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -17,7 +19,7 @@ public class BackManager {
     private String backDir; // 备份文件目录
     private String compType; // 压缩方式
     private String encryType; // 编码方式
-    private String backFilePath; // 备份文件路径
+    private String backFilePath=""; // 备份文件路径
 
     public String getBackFilePath() {
         return backFilePath;
@@ -49,8 +51,7 @@ public class BackManager {
     }
 
     // 从源目录中提取并生成备份文件
-    public boolean fileExtract(List<String> filePathSet, String srcDir, int[] srcSize) {
-        backFilePath = "";
+    public boolean fileExtract(List<String> filePathSet, String srcDir) {
         File back = new File(this.backDir);
         // 备份目录存在性验证，否则直接返回
         if(!dirExistEval(back))
@@ -63,24 +64,32 @@ public class BackManager {
         // 备份文件命名，以备份时间为名
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         Calendar calendar = Calendar.getInstance();
-        backFilePath = fileConcat(this.backDir, df.format(calendar.getTime()));
+        this.backFilePath = fileConcat(this.backDir, df.format(calendar.getTime()));
         // 缓存容器
         // todo: 将这里页面化
         try {
-            os = new FileOutputStream(backFilePath);
+            os = new FileOutputStream(this.backFilePath);
             // 遍历所有源文件，并复制到备份文件中
             for (int i = 0; i < fileNum; i++) {
                 String inFilePath = filePathSet.get(i);
-                is = new FileInputStream(fileConcat(srcDir, inFilePath));
-                srcSize[i] = fileCopy(is, os);
-                metaMap.put(inFilePath, ""+srcSize[i]);
+                String inFilePathAbs = fileConcat(srcDir, inFilePath);
+                File inFile = new File(inFilePathAbs);
+                int fileType = (inFile.isFile())?1:0;
+                if(fileType==1){
+                    is = new FileInputStream(inFilePathAbs);
+                    fileCopy(is, os, inFilePath);
+                }
+                else
+                    dirCopy(os, inFilePath, fileType);
+//                srcSize[i] = fileCopy(is, os, inFilePath);
+//                metaMap.put(inFilePath, ""+srcSize[i]);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         // 将文件原数据写入json文件
-        writeJson(backFilePath+".json", metaMap);
+//        writeJson(this.backFilePath+".json", metaMap);
 
         return true;
     }

@@ -1,6 +1,5 @@
 package com;
 
-import atlantafx.base.controls.Notification;
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
 import com.domain.BackManager;
@@ -24,7 +23,7 @@ import java.util.Optional;
 import static com.util.FileToolUtil.fileExistEval;
 import static com.util.FileToolUtil.tfIsEmpty;
 import static com.util.StyleUtil.*;
-import static com.util.DataUtils.getIndexForArray;
+import static com.util.DataUtil.getIndexForArray;
 
 // 主程序，也是GUI设计界面
 public class Main extends Application {
@@ -146,7 +145,7 @@ public class Main extends Application {
                                     srcM = new SrcManager(tfSrc.getText());
                                     backM = new BackManager(tfBackupSave.getText(), "", "");
                                     // 备份文件提取
-                                    boolean backFlag = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir(), srcM.getSrcSize());
+                                    boolean backFlag = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
                                     // 提示窗口
                                     if(backFlag)
                                         createPopup("文件备份成功", rootSp); // 备份成功

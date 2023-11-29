@@ -36,10 +36,8 @@ public class ResManager {
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
-        int fileLen = -1;
         for(String key : metaJson.keySet()){
-            fileLen = metaJson.getIntValue(key);
-            fileRestoreSingle(is,  fileConcat(this.resDir, key), fileLen);
+            fileRestoreSingle(is, this.resDir);
         }
     }
 
