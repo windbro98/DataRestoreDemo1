@@ -135,7 +135,6 @@ public class FileToolUtil {
     }
 
     // 单个文件恢复
-    // todo: 对文件恢复过程进行debug
     public static void fileRestoreSingle(FileInputStream is, String resRoot) throws IOException {
         // 读取head, headDecode中的信号依次为headPage, fileType, tailType
         int[] headDecode = readHead(is);
@@ -144,21 +143,21 @@ public class FileToolUtil {
 
         // 获取恢复文件名
         while(headDecode[0]==1){
-            // todo: 替换掉所有的tmpHead[1], 将其翻译为实际的长度
-            is.read(bufferByte, 0, tmpHead[1]);
+            // headDecode[signalNum] -> headLen
+            is.read(bufferByte, 0, headDecode[signalNum]);
             if(fileNameByte != null){
                 int prevLen = fileNameByte.length;
                 tmpFileNameByte = fileNameByte;
-                fileNameByte = new byte[prevLen+tmpHead[1]];
+                fileNameByte = new byte[prevLen+headDecode[signalNum]];
                 System.arraycopy(tmpFileNameByte, 0, fileNameByte, 0, prevLen);
-                System.arraycopy(bufferByte, 0, fileNameByte, prevLen, tmpHead[1]);
+                System.arraycopy(bufferByte, 0, fileNameByte, prevLen, headDecode[signalNum]);
                 headDecode = readHead(is);
             }
             else{
-                fileNameByte = new byte[tmpHead[1]];
-                System.arraycopy(bufferByte, 0, fileNameByte, 0, tmpHead[1]);
+                fileNameByte = new byte[headDecode[signalNum]];
+                System.arraycopy(bufferByte, 0, fileNameByte, 0, headDecode[signalNum]);
             }
-            if(tmpHead[1]==tmpDataLen)
+            if(headDecode[signalNum]==tmpDataLen)
                 headDecode = readHead(is);
             else
                 break;
