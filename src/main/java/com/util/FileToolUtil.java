@@ -37,12 +37,11 @@ public class FileToolUtil {
             File f = new File(filePath);
             filePathSet.add(filePath);
             if (f.isDirectory())
-                fileWalkLoop(filePath + '\\', filePathSet);
+                fileWalkLoop(filePath + '/', filePathSet);
         }
     }
 
     // 文件恢复
-    // todo: 在这里将数据页面化
     public static int fileCopy(InputStream is, OutputStream os, String fileName) throws IOException {
         int headPage=1, tailPage=0, fileType=1;
         int dataLen;
@@ -67,19 +66,19 @@ public class FileToolUtil {
     // 返回值realDataLen，表示在完成目录的复制后，该页面中可以写入的数据大小
     public static int dirCopy(OutputStream os, String dirName, int fileType) throws IOException {
         int headPage=1, dataLen=0, fileNameStart=0, tailPage=0;
-        int fileNameLen, crcCode;
+        int copyLen, crcCode;
         byte[] dirBytes = dirName.getBytes();
         int dirLen = dirBytes.length;
 
         while(fileNameStart >= 0){
-            fileNameLen = min(dirBytes.length, tmpDataLen);
+            copyLen = min(dirBytes.length-fileNameStart, tmpDataLen);
             // todo: tailPage需要重新注意，因为只有dir的时候需要判断，而文件的时候不需要判断
             tailPage = ((fileType==0) && (dirLen-fileNameStart)<=tmpDataLen) ? 1 : 0;
             // todo: crc生成
             crcCode = 0;
             // 生成tmpHead
-            fileNameStart = copyFileName(dirBytes, fileNameStart);
-            buildHead(headPage, fileType, tailPage, fileNameLen, dataLen, crcCode);
+            fileNameStart = copyFileName(dirBytes, fileNameStart, copyLen);
+            buildHead(headPage, fileType, tailPage, copyLen, dataLen, crcCode);
             if(!(fileType==1 && fileNameStart<0))
                 writePage(os);
         }
@@ -121,10 +120,10 @@ public class FileToolUtil {
     }
 
     // 复制文件名，返回下一次文件名需要开始的位置；如果文件名在本次读完，则返回该帧下一个空的字节索引
-    public static int copyFileName(byte[] fileName, int nameStart) throws IOException {
+    public static int copyFileName(byte[] fileName, int nameStart, int copyLen) throws IOException {
         int fileNameLen = fileName.length;
         if(fileNameLen-nameStart <= tmpDataLen){
-            System.arraycopy(fileName, nameStart, tmpData, 0, fileNameLen);
+            System.arraycopy(fileName, nameStart, tmpData, 0, copyLen);
             // 当文件名已读完的时候，返回-(当前帧第一个空闲位置坐标)
             return -(fileNameLen-nameStart);
         }
@@ -137,28 +136,27 @@ public class FileToolUtil {
     // 单个文件恢复
     public static void fileRestoreSingle(FileInputStream is, String resRoot) throws IOException {
         // 读取head, headDecode中的信号依次为headPage, fileType, tailType
-        int[] headDecode = readHead(is);
-        byte[] bufferByte=new byte[tmpDataLen], fileNameByte=null;
+        int[] headDecode = readPage(is);
+        byte[] fileNameByte=null;
         byte[] tmpFileNameByte;
 
         // 获取恢复文件名
         while(headDecode[0]==1){
             // headDecode[signalNum] -> headLen
-            is.read(bufferByte, 0, headDecode[signalNum]);
             if(fileNameByte != null){
                 int prevLen = fileNameByte.length;
                 tmpFileNameByte = fileNameByte;
                 fileNameByte = new byte[prevLen+headDecode[signalNum]];
                 System.arraycopy(tmpFileNameByte, 0, fileNameByte, 0, prevLen);
-                System.arraycopy(bufferByte, 0, fileNameByte, prevLen, headDecode[signalNum]);
-                headDecode = readHead(is);
+                System.arraycopy(tmpData, 0, fileNameByte, prevLen, headDecode[signalNum]);
+                // notice: headDecode is deleted here
             }
             else{
                 fileNameByte = new byte[headDecode[signalNum]];
-                System.arraycopy(bufferByte, 0, fileNameByte, 0, headDecode[signalNum]);
+                System.arraycopy(tmpData, 0, fileNameByte, 0, headDecode[signalNum]);
             }
-            if(headDecode[signalNum]==tmpDataLen)
-                headDecode = readHead(is);
+            if(headDecode[signalNum]==tmpDataLen) // headLen==tmpDataLen, 表示此时标题仍然没有读尽
+                headDecode = readPage(is);
             else
                 break;
         }
@@ -169,26 +167,24 @@ public class FileToolUtil {
         // 如果该对象是目录，直接创建并退出
         if(headDecode[1]==0){
             dirExistEval(resFile);
-            is.read(bufferByte, 0, tmpDataLen-headDecode[signalNum]);
             return;
         }
         // 如果该对象是文件，则准备读取数据
         fileExistEval(resFile, true);
         FileOutputStream os = new FileOutputStream(resFile);
         while(headDecode[2]!=1){ // 非尾页面
-            is.read(bufferByte, 0, headDecode[signalNum+1]);
-            os.write(bufferByte, 0, headDecode[signalNum+1]);
-            headDecode = readHead(is);
+            os.write(tmpData, headDecode[signalNum], headDecode[signalNum+1]);
+            headDecode = readPage(is);
         };
         // 尾页面
         // 尾页面的所有数据由三部分组成：文件名+文件数据+空白
-        is.read(bufferByte, 0, tmpDataLen-headDecode[signalNum]);
-        os.write(bufferByte, 0, headDecode[signalNum+1]); //
+        os.write(tmpData, headDecode[signalNum], headDecode[signalNum+1]); //
         return;
     }
 
-    public static int[] readHead(FileInputStream is) throws IOException {
+    public static int[] readPage(FileInputStream is) throws IOException {
         is.read(tmpHead);
+        is.read(tmpData);
         int[] headDecode = new int[signalNum+lenNum];
         int headPrefix = tmpHead[0];
         // 读取控制信号
@@ -201,7 +197,6 @@ public class FileToolUtil {
         }
         return headDecode;
     }
-
 
     // 将map<String, String>写入json文件
     public static void writeJson(String jsonPath, Map<String, String> inMap){
@@ -259,7 +254,7 @@ public class FileToolUtil {
     // 目录文件与文件名拼接
     public static String fileConcat(String dir, String file){
 //        return Paths.get(dir, file).toString();
-        return dir + '\\' + file;
+        return dir + '/' + file;
     }
 
     // 判断文本框是否为空

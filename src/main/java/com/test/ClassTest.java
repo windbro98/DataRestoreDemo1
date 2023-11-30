@@ -21,14 +21,14 @@ public class ClassTest {
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getSelFilePath());
 //
+        // 备份
         backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
         String backFilePath = backM.getBackFilePath();
-        System.out.println("各个源文件大小：");
-        System.out.println(Arrays.toString(srcM.getSrcSize()));
         backM.setBackFilePath(backFilePath);
         System.out.println("备份文件位置：");
         System.out.println(backFilePath);
 
+        // 恢复
         resM.fileRestore(backFilePath);
     }
 }
