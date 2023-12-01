@@ -8,6 +8,8 @@ import com.alibaba.fastjson2.JSONObject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.util.FileToolUtil.*;
 
@@ -28,16 +30,20 @@ public class ResManager {
 
     }
 
-    // 备份文件恢复
-    public void fileRestore(String backFilePath) throws IOException {
+    // 备份文件恢复，返回错误的文件
+    public ArrayList<String> fileRestore(String backFilePath) throws IOException {
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
+        ArrayList<String> errorFileList = new ArrayList<String>();
 
         while(is.available()>0)
         {
-            fileRestoreSingle(is, this.resDir);
+            String errorFile = fileRestoreSingle(is, this.resDir);
+            if(!errorFile.isEmpty())
+                errorFileList.add(errorFile);
         }
+        return errorFileList;
     }
 
 

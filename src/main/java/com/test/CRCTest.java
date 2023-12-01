@@ -1,37 +1,46 @@
 package com.test;
 
-import java.util.Scanner;
+import com.util.CRC;
+
+import static com.util.DataUtil.byte2binary;
+import static com.util.DataUtil.byteArray2binary;
+
 
 class CRCTest {
     public static void main(String[] args) {
 
         CRC crc = new CRC();
-        Scanner sc = new Scanner(System.in);
 
-        System.out.print("请输入多项式系数：");
-        String str = sc.next();
-        crc.setGeneratingCode(str);
+        byte[] divided = {33, -48, 38, 37};
+        String dividedBin = byteArray2binary(divided);
+        System.out.println("原数据的二进制为：");
+        System.out.println(dividedBin);
 
-        System.out.print("请输入二进制数据：");
-        String bei = sc.next();
+        System.out.println("除数为：");
+        System.out.println("101000110");
 
-        String FCS = crc.getFCS(bei);
+        byte FCS = crc.getFCS(divided);
         System.out.print("经过模2除法得到的冗余码为：");
         System.out.println(FCS);
 
-        String data = bei+crc.getFCS(bei);
-        System.out.println("生成新的数据包为：   "+data);
-        crc.setChu(data);
+        StringBuilder sb = new StringBuilder();
+        byte2binary(sb, FCS);
+        String FCS_bin = sb.toString();
+        System.out.println("冗余码的二进制为：");
+        System.out.println(FCS_bin);
 
-        //设置突变
-        String data2 = crc.setMutation(data);
-        System.out.println("发生突变后的数据包为："+data2);
+        // 测试数据损坏
+        byte[] dividedMut = crc.setMutation(divided);
 
+        boolean res;
 
-        System.out.print("经过模2除法得到的余数为：");
-        System.out.println(crc.setChu(data2));
+        res = crc.judge(divided, FCS);
+        System.out.println("正常数据的判定结果为：");
+        System.out.println(res);
 
-        crc.judge(crc.setChu(data2));
+        res = crc.judge(dividedMut, FCS);
+        System.out.println("损坏数据的判定结果为：");
+        System.out.println(res);
 
     }
 }

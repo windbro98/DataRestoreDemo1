@@ -5,6 +5,7 @@ import com.domain.ResManager;
 import com.domain.SrcManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ClassTest {
@@ -29,6 +30,15 @@ public class ClassTest {
         System.out.println(backFilePath);
 
         // 恢复
-        resM.fileRestore(backFilePath);
+        ArrayList<String> errorFileList = resM.fileRestore(backFilePath);
+        if(errorFileList.isEmpty())
+            System.out.println("恢复成功");
+        else{
+            System.out.println("出现文件损坏！损坏文件为：");
+            for (String errorFile :
+                    errorFileList) {
+                System.out.println(errorFile);
+            }
+        }
     }
 }

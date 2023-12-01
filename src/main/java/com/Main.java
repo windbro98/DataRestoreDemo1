@@ -18,6 +18,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import static com.util.FileToolUtil.fileExistEval;
@@ -183,11 +184,21 @@ public class Main extends Application {
                                     resM = new ResManager(tfRestore.getText(), "", "");
                                     try {
                                         // 恢复备份文件
-                                        resM.fileRestore(tfBackupSel.getText());
-                                        // 提示窗口: 恢复成功
-                                        createPopup("文件恢复成功", rootSp);
-                                        tfBackupSel.clear();
-                                        tfRestore.clear();
+                                        ArrayList<String> errorFileList = resM.fileRestore(tfBackupSel.getText());
+                                        if(errorFileList.isEmpty()){
+                                            // 提示窗口: 恢复成功
+                                            createPopup("文件恢复成功", rootSp);
+                                            tfBackupSel.clear();
+                                            tfRestore.clear();
+                                        }
+                                        else{
+                                            StringBuilder sbErrorFiles = new StringBuilder();
+                                            for(String errorFile : errorFileList){
+                                                sbErrorFiles.append(errorFile);
+                                                sbErrorFiles.append('\n');
+                                            }
+                                            createPopup("出现损坏文件！损坏文件为：\n"+sbErrorFiles, rootSp);
+                                        }
                                     } catch (IOException | InterruptedException e) {
                                         throw new RuntimeException(e);
                                     }

@@ -6,11 +6,10 @@ import javafx.scene.control.TextField;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static java.lang.Math.min;
 
@@ -26,6 +25,8 @@ public class FileToolUtil {
     public static int lenNum = 2;
     public static byte[] tmpHead = new byte[tmpHeadLen];
     public static byte[] tmpData = new byte[tmpDataLen];
+    public static CRC crc = new CRC();
+    public static boolean pageStatus = true;
 
     // 递归遍历文件夹，获取文件
     public static void fileWalkLoop(String srcDir, List<String> filePathSet) {
@@ -51,10 +52,8 @@ public class FileToolUtil {
         // dataStart: 代表开始写data的索引位置
         while(is.available()>0){
             dataLen = copyData(is, dataStart);
-            // crc Code generation
-            int crcCode=0;
             tailPage = (is.available()>0) ? 0 : 1;
-            buildHead(headPage, fileType, tailPage, dataStart, dataLen, crcCode);
+            buildHead(headPage, fileType, tailPage, dataStart, dataLen);
             writePage(os);
             headPage = 0;
             dataStart = 0;
@@ -72,13 +71,11 @@ public class FileToolUtil {
 
         while(fileNameStart >= 0){
             copyLen = min(dirBytes.length-fileNameStart, tmpDataLen);
-            // todo: tailPage需要重新注意，因为只有dir的时候需要判断，而文件的时候不需要判断
+            // 只有dir的时候需要判断，而文件的时候不需要判断
             tailPage = ((fileType==0) && (dirLen-fileNameStart)<=tmpDataLen) ? 1 : 0;
-            // todo: crc生成
-            crcCode = 0;
             // 生成tmpHead
             fileNameStart = copyFileName(dirBytes, fileNameStart, copyLen);
-            buildHead(headPage, fileType, tailPage, copyLen, dataLen, crcCode);
+            buildHead(headPage, fileType, tailPage, copyLen, dataLen);
             if(!(fileType==1 && fileNameStart<0))
                 writePage(os);
         }
@@ -87,20 +84,23 @@ public class FileToolUtil {
         return -fileNameStart;
      }
 
-     public static void writePage(OutputStream os) throws IOException {
+     // tmpData和大部分的tmpHead准备完成，写入page
+    public static void writePage(OutputStream os) throws IOException {
+        // 计算循环冗余校验码
+        tmpHead[3] = crc.getFCS(tmpData);
         os.write(tmpHead, 0, tmpHeadLen);
         os.write(tmpData, 0, tmpDataLen);
         Arrays.fill(tmpHead, (byte)0);
         Arrays.fill(tmpData, (byte)0);
-     }
+    }
 
-     public static void buildHead(int headPage, int fileType, int tailPage, int fileNameLen, int dataLen, int crcCode) throws IOException {
+    // 构建tmpHead, tmpHead[3]的位置留给了crcCode，但是这是在最后生成的
+    public static void buildHead(int headPage, int fileType, int tailPage, int fileNameLen, int dataLen) throws IOException {
         // 0位-是否是头页面；1位-是否是文件；2位-是否是尾页面
         byte headPrefix = (byte)(headPage + (fileType<<1) + (tailPage<<2));
         tmpHead[0] = headPrefix;
         tmpHead[1] = (byte)fileNameLen;
         tmpHead[2] = (byte)dataLen;
-        tmpHead[3] = (byte)crcCode;
      }
 
     // 返回值realDataLen为本次实际写入的数据大小
@@ -134,7 +134,7 @@ public class FileToolUtil {
     }
 
     // 单个文件恢复
-    public static void fileRestoreSingle(FileInputStream is, String resRoot) throws IOException {
+    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException {
         // 读取head, headDecode中的信号依次为headPage, fileType, tailType
         int[] headDecode = readPage(is);
         byte[] fileNameByte=null;
@@ -167,7 +167,12 @@ public class FileToolUtil {
         // 如果该对象是目录，直接创建并退出
         if(headDecode[1]==0){
             dirExistEval(resFile);
-            return;
+            if(pageStatus)
+                return "";
+            else{
+                pageStatus = true;
+                return resFileName;
+            }
         }
         // 如果该对象是文件，则准备读取数据
         fileExistEval(resFile, true);
@@ -178,8 +183,14 @@ public class FileToolUtil {
         };
         // 尾页面
         // 尾页面的所有数据由三部分组成：文件名+文件数据+空白
-        os.write(tmpData, headDecode[signalNum], headDecode[signalNum+1]); //
-        return;
+        os.write(tmpData, headDecode[signalNum], headDecode[signalNum+1]);
+
+        if(pageStatus)
+            return "";
+        else{
+            pageStatus = true;
+            return resFileName;
+        }
     }
 
     public static int[] readPage(FileInputStream is) throws IOException {
@@ -195,6 +206,15 @@ public class FileToolUtil {
         for (int i = 0; i < lenNum; i++) {
             headDecode[signalNum+i] = (tmpHead[i+1]<0) ? (tmpHeadLen+tmpDataLen+tmpHead[i+1]) : tmpHead[i+1];
         }
+        // 错误信息
+        tmpData[34] = (byte)0;
+        // 确认循环校验码：
+        pageStatus = (pageStatus && crc.judge(tmpData, tmpHead[3]));
+
+//        // 文件损坏测试
+//        if(Math.random()<0.1)
+//            tmpData[78] = (byte)(1-tmpData[78]);
+
         return headDecode;
     }
 
