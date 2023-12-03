@@ -1,6 +1,10 @@
 package com.util;
 
 
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
 public class DataUtil {
     // 工具类，禁止创建对象
     private DataUtil(){
@@ -49,5 +53,19 @@ public class DataUtil {
 //            valueInt %= divider;
 //            divider /= 2;
 //        }
+    }
+
+    // map转为byte[]
+    public static byte[] map2byteArray(Map<String, String> data) throws IOException {
+        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(byteOut);
+        out.writeObject(data);
+        return byteOut.toByteArray();
+    }
+    // byte[]转为map
+    public static Map<String, String> byteArray2map(byte[] data) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(data);
+        ObjectInputStream in = new ObjectInputStream(byteIn);
+        return (HashMap<String, String>) in.readObject();
     }
 }

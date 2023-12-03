@@ -1,7 +1,7 @@
 package com.util;
 
 import java.io.*;
-import java.util.Arrays;
+import java.util.HashMap;
 
 import static com.util.FileToolUtil.*;
 import static java.lang.Math.min;
@@ -24,6 +24,7 @@ public class PageManagerUtil {
 
         // 获取恢复文件名
         while(tmpPage.getHeadPage()==1){
+//        while(tmpPage.getNameLen()>0){
             // tmpPage.getNameLen() -> headLen
             if(fileNameByte != null){
                 int prevLen = fileNameByte.length;
@@ -46,18 +47,20 @@ public class PageManagerUtil {
 
         String resFilePath = fileConcat(resRoot, resFileName);
         File resFile = new File(resFilePath);
-        // 如果该对象是目录，直接创建并退出
-        if(tmpPage.getFileType()==0){
+
+        // 创建目录或文件
+        if(tmpPage.getFileType()==0)
             dirExistEval(resFile);
-            if(pageStatus)
-                return "";
-            else{
-                pageStatus = true;
-                return resFileName;
-            }
-        }
+        else
+            fileExistEval(resFile, true);
+
+        // 设置文件元数据
+
+        // 如果该对象是目录，则直接检验文件中是否有页面损坏并退出
+        if(tmpPage.getFileType()==0)
+            return pageCheck(resFileName);
+
         // 如果该对象是文件，则准备读取数据
-        fileExistEval(resFile, true);
         FileOutputStream os = new FileOutputStream(resFile);
         while(tmpPage.getTailPage()!=1){ // 非尾页面
             os.write(tmpPage.pageData, tmpPage.getNameLen(), tmpPage.getDataLen());
@@ -67,20 +70,16 @@ public class PageManagerUtil {
         // 尾页面的所有数据由三部分组成：文件名+文件数据+空白
         os.write(tmpPage.pageData, tmpPage.getNameLen(), tmpPage.getDataLen());
 
-        if(pageStatus)
-            return "";
-        else{
-            pageStatus = true;
-            return resFileName;
+        // 检验文件中是否有页面损坏并退出
+        return pageCheck(resFileName);
         }
-    }
 
     // 文件恢复
-    public static int fileCopy(InputStream is, OutputStream os, String fileName) throws IOException {
+    public static int fileCopy(InputStream is, OutputStream os, String fileName, File inFile) throws IOException {
         int headPage=1, tailPage=0, fileType=1;
         int dataLen;
 
-        int dataStart = dirCopy(os, fileName, fileType);
+        int dataStart = nameCopy(os, fileName, inFile, fileType);
 
         // dataStart: 代表开始写data的索引位置
         while(is.available()>0){
@@ -95,14 +94,15 @@ public class PageManagerUtil {
         return 0;
     }
 
-    // 对(相对)路径名进行复制，文件或目录均可调用
+    // 对文件名进行复制，文件或目录均可调用
     // 返回值realDataLen，表示在完成目录的复制后，该页面中可以写入的数据大小
-    public static int dirCopy(OutputStream os, String dirName, int fileType) throws IOException {
+    public static int nameCopy(OutputStream os, String name, File file, int fileType) throws IOException {
         int headPage=1, dataLen=0, metaLen=0, fileNameStart=0;
         int tailPage, copyLen;
-        byte[] dirBytes = dirName.getBytes();
+        byte[] dirBytes = name.getBytes();
         int dirLen = dirBytes.length;
 
+        // 写入文件名
         while(fileNameStart >= 0){
             copyLen = min(dirBytes.length-fileNameStart, Page.pageDataLen);
             // 只有dir的时候需要判断，而文件的时候不需要判断
@@ -110,9 +110,12 @@ public class PageManagerUtil {
             // 生成tmpHead
             fileNameStart = copyFileName(dirBytes, fileNameStart, copyLen);
             buildHead(headPage, fileType, tailPage, copyLen, metaLen, dataLen);
-            if(!(fileType==1 && fileNameStart<0))
+            if(fileNameStart<0) // 文件名已写完
                 writePage(os);
         }
+
+        // 写入元数据
+        int a = 1;
 
         // 返回该帧下一个空字节的索引
         return -fileNameStart;
@@ -181,5 +184,14 @@ public class PageManagerUtil {
 
         // 确认循环校验码：
         pageStatus = (pageStatus && Page.crc.judge(tmpPage.pageData, tmpPage.crcCode));
+    }
+
+    public static String pageCheck(String resFileName){
+        if(pageStatus)
+            return "";
+        else{
+            pageStatus = true;
+            return resFileName;
+        }
     }
 }

@@ -2,15 +2,12 @@ package com.domain;
 
 import java.io.*;
 import java.io.File;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import static com.util.FileToolUtil.*;
-import static com.util.PageManagerUtil.dirCopy;
+import static com.util.PageManagerUtil.nameCopy;
 import static com.util.PageManagerUtil.fileCopy;
 
 /**
@@ -77,10 +74,10 @@ public class BackManager {
                 int fileType = (inFile.isFile())?1:0;
                 if(fileType==1){
                     is = new FileInputStream(inFilePathAbs);
-                    fileCopy(is, os, inFilePath);
+                    fileCopy(is, os, inFilePath, inFile);
                 }
                 else
-                    dirCopy(os, inFilePath, fileType);
+                    nameCopy(os, inFilePath, inFile, fileType);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

@@ -12,10 +12,11 @@ public class PageUtilTest {
         String inFileName1 = "java学习笔记1.pdf";
         String srcRoot = "OriginalData";
         String inFilePath1 = fileConcat(srcRoot, inFileName1);
+        File inFile1 = new File(inFilePath1);
         String backFilePath = "BackupData/backup";
         OutputStream os = new FileOutputStream(backFilePath);
         InputStream is1 = new FileInputStream(inFilePath1);
-        fileCopy(is1, os, inFileName1);
+        fileCopy(is1, os, inFileName1, inFile1);
 
 //         恢复测试
         String resRoot = "RestoreData";
