@@ -3,6 +3,8 @@ package com.test;
 import java.io.*;
 
 import static com.util.FileToolUtil.*;
+import static com.util.PageManagerUtil.fileCopy;
+import static com.util.PageManagerUtil.fileRestoreSingle;
 
 public class PageUtilTest {
     public static void main(String[] args) throws IOException {

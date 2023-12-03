@@ -23,11 +23,7 @@ IPv4报文
 
    https://blog.csdn.net/uikoo9/article/details/27980869
 
-5. 获取文件元数据：https://zq99299.github.io/java-tutorial/essential/io/fileAttr.html
-
-   ![image-20231130212836683](D:\learning_programs\java_programs\DataRestoreDemo1\images\Readme\image-20231130212836683.png)
-
-6. 软硬连接（套接字可以不支持）
+5. 软硬连接（套接字可以不支持）
 
    ![image-20231130212953291](D:\learning_programs\java_programs\DataRestoreDemo1\images\Readme\image-20231130212953291.png)
 
@@ -36,6 +32,38 @@ IPv4报文
    https://zhuanlan.zhihu.com/p/365239653#
 
    5.pdf p12
+
+6. 获取文件元数据
+
+   ```java
+   public class TestXY {
+   	public static void main(String[] args) throws Exception {
+            getFileCreateTime("");
+   	}
+   
+   
+   	public static String getFileCreateTime(String filePath) {
+   
+   		SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss ");
+   		FileTime t = null;
+   		try {
+   			t = Files.readAttributes(Paths.get(filePath), BasicFileAttributes.class).creationTime();
+   		} catch (IOException e) {
+   			e.printStackTrace();
+   		}
+   
+   		String createTime = dateFormat.format(t.toMillis());
+   		System.out.println("创建时间 ： " + createTime);
+   		return createTime;
+   	}
+   }
+   ```
+
+   其中值得关注的属性：creationTime, lastModifiedTime
+
+   https://www.w3cschool.cn/java/java-nio-file-attributes.html
+
+   只要获取了文件的元数据，就可以根据元数据进行filter
 
 ### 开发进度
 1. v1: 基本的GUI界面、备份和恢复函数 done
@@ -72,6 +100,10 @@ IPv4报文
 3. 对文件的元数据进行保存
 4. 压缩与解压
 5. 软硬链接
+
+代码细节：
+
+1. 验证readPage的第一行，是否能够读到变量中
 
 ### 附加要求
 1. 完成cyc循环校验（必备）

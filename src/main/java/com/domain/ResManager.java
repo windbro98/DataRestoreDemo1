@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.util.FileToolUtil.*;
+import static com.util.PageManagerUtil.fileRestoreSingle;
 
 // 恢复文件管理器
 public class ResManager {
