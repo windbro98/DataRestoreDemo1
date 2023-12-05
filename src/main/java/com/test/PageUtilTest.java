@@ -7,7 +7,7 @@ import static com.util.PageManagerUtil.fileCopy;
 import static com.util.PageManagerUtil.fileRestoreSingle;
 
 public class PageUtilTest {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
 //        // 备份测试
         String inFileName1 = "java学习笔记1.pdf";
         String srcRoot = "OriginalData";

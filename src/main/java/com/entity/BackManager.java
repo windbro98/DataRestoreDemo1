@@ -7,8 +7,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static com.util.FileToolUtil.*;
-import static com.util.PageManagerUtil.nameCopy;
-import static com.util.PageManagerUtil.fileCopy;
+import static com.util.PageManagerUtil.*;
 
 /**
     todo: 压缩、加密方式的默认赋值，使用
@@ -74,10 +73,10 @@ public class BackManager {
                 int fileType = (inFile.isFile())?1:0;
                 if(fileType==1){
                     is = new FileInputStream(inFilePathAbs);
-                    fileCopy(is, os, inFilePath, inFile);
+                    filePaged(is, os, inFilePath, inFile);
                 }
                 else
-                    nameCopy(os, inFilePath, inFile, fileType);
+                    dirPaged(os, inFilePath, inFile);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

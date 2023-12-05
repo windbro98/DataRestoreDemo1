@@ -201,6 +201,8 @@ public class Main extends Application {
                                         }
                                     } catch (IOException | InterruptedException e) {
                                         throw new RuntimeException(e);
+                                    } catch (ClassNotFoundException e) {
+                                        throw new RuntimeException(e);
                                     }
                                 }
                             }

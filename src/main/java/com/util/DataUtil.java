@@ -55,17 +55,22 @@ public class DataUtil {
 //        }
     }
 
-    // map转为byte[]
-    public static byte[] map2byteArray(Map<String, String> data) throws IOException {
+    // 将任意类型转换为byte[]
+    public static byte[] enByteArray(Object o) throws IOException {
+        byte[] res;
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(byteOut);
-        out.writeObject(data);
-        return byteOut.toByteArray();
+        out.writeObject(o);
+        res = byteOut.toByteArray();
+        out.flush();
+        out.close();
+        return res;
     }
-    // byte[]转为map
-    public static Map<String, String> byteArray2map(byte[] data) throws IOException, ClassNotFoundException {
-        ByteArrayInputStream byteIn = new ByteArrayInputStream(data);
+    public static Object deByteArray(byte[] b) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream byteIn = new ByteArrayInputStream(b);
         ObjectInputStream in = new ObjectInputStream(byteIn);
-        return (HashMap<String, String>) in.readObject();
+        Object res = in.readObject();
+        in.close();
+        return res;
     }
 }

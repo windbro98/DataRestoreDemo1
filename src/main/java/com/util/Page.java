@@ -45,6 +45,15 @@ public class Page {
         };
     }
 
+    // todo: tailPage此时设置为[2]，之后可能设置为[1]，需要修改
+    public void setTailPage(int tailPage){
+        int tailPagePrev = this.getTailPage();
+        if(tailPagePrev != tailPage){
+            this.headPrefix -= (byte) (tailPagePrev<<2);
+            this.headPrefix += (byte) (tailPage<<2);
+        }
+    }
+
     public void setHead(byte[] tmpHead){
         this.headPrefix = tmpHead[0];
         this.nameLen = tmpHead[1];

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class ClassTest {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         String srcDir = "OriginalData";
         String backDir = "BackupData";
         String resDir = "RestoreData";

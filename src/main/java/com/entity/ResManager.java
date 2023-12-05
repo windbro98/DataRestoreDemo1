@@ -4,6 +4,7 @@ package com.domain;
  */
 
 import com.alibaba.fastjson2.JSONObject;
+import com.util.PageManagerUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.util.FileToolUtil.*;
-import static com.util.PageManagerUtil.fileRestoreSingle;
+import static com.util.PageManagerUtil.*;
 
 // 恢复文件管理器
 public class ResManager {
@@ -32,7 +33,7 @@ public class ResManager {
     }
 
     // 备份文件恢复，返回错误的文件
-    public ArrayList<String> fileRestore(String backFilePath) throws IOException {
+    public ArrayList<String> fileRestore(String backFilePath) throws IOException, ClassNotFoundException {
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
@@ -45,6 +46,36 @@ public class ResManager {
                 errorFileList.add(errorFile);
         }
         return errorFileList;
+    }
+
+    // 单个文件恢复
+    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException {
+        // 获取恢复文件名
+        String resFileName = getResFileName(is);
+        String resFilePath = fileConcat(resRoot, resFileName);
+        File resFile = new File(resFilePath);
+        int fileType = getFileType();
+
+        // 创建目录或文件
+        if(fileType==0)
+            dirExistEval(resFile);
+        else
+            fileExistEval(resFile, true);
+
+        // 获取文件元数据
+        String[] metaData = getResMeta(is);
+
+        // 如果该对象是目录，则设置元数据
+        if(fileType==0){
+            setMetaData(resFile, metaData);
+        } else {
+            // 如果该对象是文件，则先恢复数据，后设置元数据
+            dataRestore(is, resFile);
+            setMetaData(resFile, metaData);
+        }
+
+        // 文件损坏检验，文件损坏则返回文件名
+        return pageCheck(resFileName);
     }
 
 

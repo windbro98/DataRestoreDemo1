@@ -59,11 +59,47 @@ IPv4报文
    }
    ```
 
-   其中值得关注的属性：creationTime, lastModifiedTime
+   meta-data read：https://21yi.com/java/java.nio.file.Files.getLastModifiedTime_9661.html（已经获取属主、时间、windows权限）
 
-   https://www.w3cschool.cn/java/java-nio-file-attributes.html
+   meta-data write: https://www.w3cschool.cn/java/java-nio-file-owner-permissions.html#:~:text=%E6%9C%89%E4%B8%89%E7%A7%8D%E6%96%B9%E6%B3%95%E5%8F%AF%E4%BB%A5%E7%AE%A1%E7%90%86%E6%96%87%E4%BB%B6%E6%89%80%E6%9C%89%E8%80%85%3A%201%20%E4%BD%BF%E7%94%A8Files.getOwner%20%28%29%E5%92%8CFiles.setOwner%20%28%29%E6%96%B9%E6%B3%95%E3%80%82%202,%E4%BD%BF%E7%94%A8%E2%80%9Cowner%E2%80%9D%E4%BD%9C%E4%B8%BA%E5%B1%9E%E6%80%A7%E5%90%8D%E7%A7%B0%E7%9A%84Files.getAttribute%20%28%29%20%E5%92%8CFiles.setAttribute%20%28%29%E6%96%B9%E6%B3%95%E3%80%82%203%20%E4%BD%BF%E7%94%A8FileOwnerAttributeView%E3%80%82
 
    只要获取了文件的元数据，就可以根据元数据进行filter
+
+7.文件筛选：类型；名字；时间；尺寸；（路径？）
+
+```
+import java.util.regex.*;
+ 
+class RegexExample1{
+   public static void main(String[] args){
+      String content = "I am noob " +
+        "from runoob.com.";
+ 
+      String pattern = ".*runoob.*";
+ 
+      boolean isMatch = Pattern.matches(pattern, content);
+      System.out.println("字符串中是否包含了 'runoob' 子字符串? " + isMatch);
+   }
+}
+```
+
+8. 压缩解压：Huffman编码和LZ77算法（可以调库）
+
+   Huffman编码：https://blog.csdn.net/weixin_37610397/article/details/80222991
+
+   https://blog.csdn.net/kaerbuka/article/details/90762178
+
+   https://www.cnblogs.com/yu-kunpeng/p/10087415.html
+
+   LZ77算法：（外网）
+
+   https://gist.github.com/fogus/5404660
+
+   https://commons.apache.org/proper/commons-compress/jacoco/org.apache.commons.compress.compressors.lz77support/LZ77Compressor.java.html
+
+9. 加密解密：使用openssl库（不建议使用openssl的底层库，推荐使用最新的EVP API），也可以尝试手写实现AES的CBC模式
+
+   
 
 ### 开发进度
 1. v1: 基本的GUI界面、备份和恢复函数 done
@@ -103,7 +139,7 @@ IPv4报文
 
 代码细节：
 
-1. 验证readPage的第一行，是否能够读到变量中
+1. 已经读取到了文件时间等元数据，之后需要验证String能否直接写入，同时还需要验证能否将数据写入
 
 ### 附加要求
 1. 完成cyc循环校验（必备）
