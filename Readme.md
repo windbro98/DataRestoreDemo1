@@ -7,7 +7,7 @@ https://blog.csdn.net/fish332/article/details/114178510
 
 （建议搜索：java文件备份）文件备份参考
 
-![img.png](img.png)
+![img.png](D:\learning_programs\java_programs\DataRestoreDemo1\images\Readme\img.png)
 
 IPv4报文
 
@@ -148,7 +148,3 @@ class RegexExample1{
 2. 打包解包：注意**目录也是文件！！！** 一定要实现分块化处理。
 3. 压缩：实现Huffman编码和LZ77编码。其中Huffman编码可以在压缩过程中使用字符串的形式，但是在存储和恢复过程中要使用byte
 建议直接存储哈夫曼树用于后续解码。
-
-LZ77编码中，内存不可能一直朝一个方向无限扩展，如何处理？ -> 移动内容（丢失历史窗口且缓慢）；循环缓冲（可以加分）
-4加密解密：使用AES加密，但不能是简单的异或，最好可以使用CBC模式（加分）
-5封装成库：使程序的核心逻辑与界面实现分离

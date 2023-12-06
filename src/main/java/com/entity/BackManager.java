@@ -19,18 +19,20 @@ public class BackManager {
     private String encryType; // 编码方式
     private String backFilePath=""; // 备份文件路径
 
+    public BackManager() {
+    }
+
     public String getBackFilePath() {
         return backFilePath;
     }
     // todo: 设置压缩和加密的默认值
     // 备份文件管理器初始化
-    public BackManager(String backDir, String compType, String encryType) {
+    public void initBackManager(String backDir, String compType, String encryType) {
         this.backDir = backDir;
         this.compType = compType;
         this.encryType = encryType;
     }
-    public BackManager() {
-    }
+
     // 属性的设置与获取
     public void setBackFilePath(String backFilePath) {
         this.backFilePath = backFilePath;

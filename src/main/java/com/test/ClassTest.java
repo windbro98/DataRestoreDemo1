@@ -15,14 +15,17 @@ public class ClassTest {
         String compType = "";
         String encryType = "";
 
-        SrcManager srcM = new SrcManager(srcDir);
-        BackManager backM = new BackManager(backDir, compType, encryType);
-        ResManager resM = new ResManager(resDir, compType, encryType);
+        SrcManager srcM = new SrcManager();
+        BackManager backM = new BackManager();
+        ResManager resM = new ResManager();
+        srcM.initSrcManager(srcDir);
+        backM.initBackManager(backDir, compType, encryType);
+        resM.initResManager(resDir, compType, encryType);
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getSelFilePath());
 //
         // 备份
-        backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
+        backM.fileExtract(srcM.getSelFilePath(), srcM.getsrcDir());
         String backFilePath = backM.getBackFilePath();
         backM.setBackFilePath(backFilePath);
         System.out.println("备份文件位置：");

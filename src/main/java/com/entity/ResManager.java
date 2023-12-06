@@ -17,8 +17,10 @@ public class ResManager {
     private String compType; // 文件压缩方式
     private String encryType; // 文件编码方式
 
+    public ResManager(){}
+
     // 初始化
-    public ResManager(String resDir, String compType, String encryType) {
+    public void initResManager(String resDir, String compType, String encryType) {
         this.resDir = resDir;
         this.compType = compType;
         this.encryType = encryType;

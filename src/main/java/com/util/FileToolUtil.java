@@ -2,6 +2,7 @@ package com.util;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
 import java.io.*;
@@ -78,14 +79,14 @@ public class FileToolUtil {
     }
 
     // 递归遍历文件夹，获取文件
-    public static void fileWalkLoop(String srcDir, List<String> filePathSet) {
+    public static void fileWalkLoop(String srcDir, List<File> filePathSet) {
         // 递归获取源目录下所有文件的路径
         File src = new File(srcDir);
         String[] srcfilePathSets = src.list();
         for (String file : srcfilePathSets) {
             String filePath = fileConcat(srcDir, file);
             File f = new File(filePath);
-            filePathSet.add(filePath);
+            filePathSet.add(f);
             if (f.isDirectory())
                 fileWalkLoop(filePath + '/', filePathSet);
         }
@@ -152,4 +153,5 @@ public class FileToolUtil {
 
     // 判断文本框是否为空
     public static boolean tfIsEmpty(TextField tf){return tf.getText().isEmpty();}
+    public static boolean taIsEmpty(TextArea ta){return ta.getText().isEmpty();}
 }
