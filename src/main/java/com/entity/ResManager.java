@@ -1,16 +1,12 @@
-package com.domain;
+package com.entity;
 /**
  * todo: decryption和decompression书写
  */
-
-import com.alibaba.fastjson2.JSONObject;
-import com.util.PageManagerUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.util.FileToolUtil.*;
 import static com.util.PageManagerUtil.*;

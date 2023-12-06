@@ -5,7 +5,11 @@ import com.alibaba.fastjson2.JSONObject;
 import javafx.scene.control.TextField;
 
 import java.io.*;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +22,60 @@ public class FileToolUtil {
     // 工具类，禁止创建对象
     private FileToolUtil() {
     }
-    
+
+    // 获取文件元数据
+    public static String[] getMetaData(File file) throws IOException {
+        String owner, creationTime, lastAccessTime, lastModifiedTime, filePermission;
+        Path path = file.toPath();
+        FileOwnerAttributeView ownerAttributeView = Files.getFileAttributeView(path, FileOwnerAttributeView.class);
+        BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
+        BasicFileAttributes attributes = basicFileAttributeView.readAttributes();
+
+        // 属主
+        owner = ownerAttributeView.getOwner().getName();
+        // 时间，包括创建时间、最后访问时间和最后修改时间
+        creationTime = String.valueOf(attributes.creationTime().toMillis());
+        lastAccessTime = String.valueOf(attributes.lastAccessTime().toMillis());
+        lastModifiedTime = String.valueOf(attributes.lastModifiedTime().toMillis());
+        // 权限
+        int filePermissionInt = 0;
+        if(file.canExecute()) filePermissionInt += 1;
+        if(file.canRead()) filePermissionInt += 2;
+        if(file.canWrite()) filePermissionInt += 4;
+        filePermission = String.valueOf(filePermissionInt);
+
+        return new String[]{owner, creationTime, lastAccessTime, lastModifiedTime, filePermission};
+    }
+
+    // 设置文件元数据
+    public static void setMetaData(File file, String[] metaData) throws IOException {
+        String owner=metaData[0], creationTime=metaData[1], lastAccessTime=metaData[2], lastModifiedTime=metaData[3], filePermission=metaData[4];
+
+        Path filePath = Paths.get(file.getAbsolutePath());
+        // owner
+        UserPrincipalLookupService upls = FileSystems.getDefault().getUserPrincipalLookupService();
+        UserPrincipal newOwner = upls.lookupPrincipalByName(owner);
+        try{
+            Files.setOwner(filePath, newOwner);
+        }catch(IOException ade){
+            // todo: 无权限警告
+            System.out.println("无权限");
+        }
+
+        // permission
+        int filePermisson =Integer.valueOf(filePermission);
+        if(filePermisson%2==1) file.setExecutable(true);
+        if((filePermisson>>1)%2==1) file.setReadable(true);
+        if((filePermisson>>2)%2==1) file.setWritable(true);
+
+        // lastModifiedTime, lastAccessTime, creationTime
+        BasicFileAttributeView attributes = Files.getFileAttributeView(filePath, BasicFileAttributeView.class);
+        attributes.setTimes(
+                FileTime.fromMillis(Long.parseLong(lastModifiedTime)), // lastModifiedTime
+                FileTime.fromMillis(Long.parseLong(lastAccessTime)), // lastAccessTime
+                FileTime.fromMillis(Long.parseLong(creationTime)) // creationTime
+        );
+    }
 
     // 递归遍历文件夹，获取文件
     public static void fileWalkLoop(String srcDir, List<String> filePathSet) {

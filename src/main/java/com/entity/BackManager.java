@@ -1,4 +1,4 @@
-package com.domain;
+package com.entity;
 
 import java.io.*;
 import java.io.File;

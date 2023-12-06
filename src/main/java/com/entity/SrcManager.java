@@ -1,4 +1,4 @@
-package com.domain;
+package com.entity;
 /**
  * todo: 过滤器的构建、使用
  */

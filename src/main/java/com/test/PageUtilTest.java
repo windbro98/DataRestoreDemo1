@@ -2,9 +2,9 @@ package com.test;
 
 import java.io.*;
 
+import static com.entity.ResManager.fileRestoreSingle;
 import static com.util.FileToolUtil.*;
-import static com.util.PageManagerUtil.fileCopy;
-import static com.util.PageManagerUtil.fileRestoreSingle;
+import static com.util.PageManagerUtil.filePaged;
 
 public class PageUtilTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -16,7 +16,7 @@ public class PageUtilTest {
         String backFilePath = "BackupData/backup";
         OutputStream os = new FileOutputStream(backFilePath);
         InputStream is1 = new FileInputStream(inFilePath1);
-        fileCopy(is1, os, inFileName1, inFile1);
+        filePaged(is1, os, inFileName1, inFile1);
 
 //         恢复测试
         String resRoot = "RestoreData";

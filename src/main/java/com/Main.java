@@ -2,9 +2,9 @@ package com;
 
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
-import com.domain.BackManager;
-import com.domain.ResManager;
-import com.domain.SrcManager;
+import com.entity.BackManager;
+import com.entity.ResManager;
+import com.entity.SrcManager;
 import com.ui.PageFactory;
 import javafx.application.Application;
 import javafx.scene.Node;
@@ -16,12 +16,10 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
-import static com.util.FileToolUtil.fileExistEval;
 import static com.util.FileToolUtil.tfIsEmpty;
 import static com.util.StyleUtil.*;
 import static com.util.DataUtil.getIndexForArray;

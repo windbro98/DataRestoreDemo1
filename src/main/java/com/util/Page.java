@@ -3,7 +3,7 @@ package com.util;
 public class Page {
     final static int pageHeadLen = 8;
     final static int pageDataLen = 248;
-    final static int signalNum = 3; // 控制信号数量
+    final static int signalNum = 2; // 控制信号数量, 从低到搞依次为fileType, tailPage
     final static int lenNum = 3; // 长度数量
     final static CRC crc = new CRC();
     public byte headPrefix;
@@ -23,14 +23,11 @@ public class Page {
     public int getMetaLen(){
         return this.metaLen<0 ? (256+this.metaLen) : this.metaLen;
     }
-    public int getHeadPage(){
+    public int getFileType(){
         return this.headPrefix%2;
     }
-    public int getFileType(){
-        return (this.headPrefix>>1)%2;
-    }
     public int getTailPage(){
-        return (this.headPrefix>>2)%2;
+        return (this.headPrefix>>1)%2;
     }
     public byte[] getHead(){
         return new byte[]{
@@ -49,8 +46,7 @@ public class Page {
     public void setTailPage(int tailPage){
         int tailPagePrev = this.getTailPage();
         if(tailPagePrev != tailPage){
-            this.headPrefix -= (byte) (tailPagePrev<<2);
-            this.headPrefix += (byte) (tailPage<<2);
+            this.headPrefix += (byte) ((tailPage-tailPagePrev)<<1);
         }
     }
 

@@ -1,12 +1,11 @@
 package com.test;
 
-import com.domain.BackManager;
-import com.domain.ResManager;
-import com.domain.SrcManager;
+import com.entity.BackManager;
+import com.entity.ResManager;
+import com.entity.SrcManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ClassTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
