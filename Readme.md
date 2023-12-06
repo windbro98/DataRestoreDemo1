@@ -113,6 +113,8 @@ class RegexExample1{
 3. v3
    
    v3.1: 实现循环校验码crc。如果文件损坏（仅限文件的bit修改），则在通知框中提示损坏的文件名
+   
+   v3.5: 基本将meta-data加入到恢复过程中，但是存在两个漏洞：i. owner只能通过cmd进行设置，否则无权限；ii. accessTime恢复问题
 
 ### 代码注意
 1. 在FileToolUtil中，有readPage函数，其中含有测试文件损坏部分
