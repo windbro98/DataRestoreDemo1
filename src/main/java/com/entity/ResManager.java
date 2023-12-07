@@ -13,11 +13,16 @@ import static com.util.PageManagerUtil.*;
 
 // 恢复文件管理器
 public class ResManager {
+    // 单例模式
+    private final static ResManager INSTANCE = new ResManager();
+    private ResManager(){}
+    public static ResManager getInstance(){
+        return INSTANCE;
+    }
     private String resDir; // 恢复文件目录
     private String compType; // 文件压缩方式
     private String encryType; // 文件编码方式
 
-    public ResManager(){}
 
     // 初始化
     public void initResManager(String resDir, String compType, String encryType) {

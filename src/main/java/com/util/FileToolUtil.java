@@ -11,10 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static java.lang.Math.min;
 
@@ -79,16 +76,16 @@ public class FileToolUtil {
     }
 
     // 递归遍历文件夹，获取文件
-    public static void fileWalkLoop(String srcDir, List<File> filePathSet) {
+    public static void fileWalkLoop(String srcDir, List<String> filePathSet) {
         // 递归获取源目录下所有文件的路径
         File src = new File(srcDir);
-        String[] srcfilePathSets = src.list();
-        for (String file : srcfilePathSets) {
-            String filePath = fileConcat(srcDir, file);
-            File f = new File(filePath);
-            filePathSet.add(f);
-            if (f.isDirectory())
-                fileWalkLoop(filePath + '/', filePathSet);
+        File[] srcFileSets = src.listFiles();
+
+        for (File file : srcFileSets) {
+            String filePath = file.getPath();
+            filePathSet.add(filePath);
+            if (file.isDirectory())
+                fileWalkLoop(filePath + File.separator, filePathSet);
         }
     }
 
@@ -148,7 +145,7 @@ public class FileToolUtil {
     // 目录文件与文件名拼接
     public static String fileConcat(String dir, String file){
 //        return Paths.get(dir, file).toString();
-        return dir + '/' + file;
+        return dir + File.separator + file;
     }
 
     // 判断文本框是否为空

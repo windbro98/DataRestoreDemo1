@@ -14,13 +14,22 @@ import static com.util.PageManagerUtil.*;
  */
 // 备份目录管理器
 public class BackManager {
+    // 单例模式
+    private final static BackManager INSTANCE = new BackManager();
+    private BackManager() {
+    }
+    public static BackManager getInstance(){
+        return INSTANCE;
+    }
+
+
+
     private String backDir; // 备份文件目录
     private String compType; // 压缩方式
     private String encryType; // 编码方式
     private String backFilePath=""; // 备份文件路径
 
-    public BackManager() {
-    }
+
 
     public String getBackFilePath() {
         return backFilePath;

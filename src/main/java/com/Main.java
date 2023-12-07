@@ -35,39 +35,30 @@ public class Main extends Application {
     int numMenu = leftMenuInfo.length;
     VBox[] rightPages = new VBox[numMenu];
     Button[] menuBtns = new Button[numMenu];
-    SrcManager srcM = new SrcManager();
-    BackManager backM = new BackManager();
-    ResManager resM = new ResManager();
-
 
     @Override
     public void start(Stage stage) throws IOException {
-
         // 页面整体风格
         Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
         stage.setTitle("数据恢复软件");
-
         // 左侧的功能框
         VBox leftMenu = new VBox();
         VBox.setVgrow(leftMenu, Priority.ALWAYS);
-
         // 右侧的内容框以及初始化
         initRightPage(rightPages, leftMenuInfo);
-
         // 软件整体布局
         SplitPane sp = new SplitPane(
                 leftMenu,
                 rightPages[0]
         );
         sp.setDividerPositions(0.3);
-
         // 左边框初始化
         initLeftMenu(leftMenu, leftMenuInfo, rightPages, sp, menuBtns);
-
         // 页面的拓扑结构
         rootSp.getChildren().add(sp);
-        Scene scene = new Scene(rootSp);
+        Scene scene = new Scene(rootSp, 900, 450);
         stage.setScene(scene);
+
         stage.show();
     }
 
@@ -118,11 +109,11 @@ public class Main extends Application {
                 case "备份":  // 文件备份界面
                     ArrayList<Integer> srcDirLenCum = new ArrayList<>();
                     // 页面初始化
-                    rightPages[i] = PageFactory.initBackupPage(srcM, backM, rootSp);
+                    rightPages[i] = PageFactory.initBackupPage(rootSp);
                     break;
                 case "恢复": // 文件恢复界面
                     // 页面初始化
-                    rightPages[i] = PageFactory.initRestorePage(backM, resM, rootSp);
+                    rightPages[i] = PageFactory.initRestorePage(rootSp);
                     break;
             }
         }

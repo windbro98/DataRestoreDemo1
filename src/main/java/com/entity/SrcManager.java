@@ -5,134 +5,123 @@ package com.entity;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.util.FileToolUtil.fileWalkLoop;
 
 // 源目录管理器
 public class SrcManager {
+    // 单例模式
+    private final static SrcManager INSTANCE = new SrcManager();
+    private SrcManager(){}
+    public static SrcManager getInstance(){
+        return INSTANCE;
+    }
     private String srcDir; // 源目录路径
 
-    private List<File> filePathSet; // 源目录中所有文件的路径集合
-    private filter fileFilter; // 源目录文件过滤器
-    private List<String> selFilePath; // 筛选后的源目录文件路径集合
-    private List<Integer> srcDirLenCum;
-
-
-    // 源目录管理器初始化
-    public SrcManager() {
-    }
+    private List<String> filePathSet; // 源目录中所有文件的路径集合
+    private ArrayList<FileFilter> fileFilters = new ArrayList<>();
+    private FileFilter comFilter;
 
     public void initSrcManager(String srcDir){
         this.srcDir = srcDir;
-        this.filePathSet = fileWalk(srcDir);
-        this.fileFilter = new filter();
-        this.selFilePath = fileSelect(this.filePathSet, this.fileFilter);
+        initComFilter();
+        filePathSet = fileWalk(srcDir, comFilter);
     }
 
-    public List<Integer> getSrcDirLenCum() {
-        return srcDirLenCum;
-    }
-
-    public void setSrcDirLenCum(List<Integer> srcDirLenCum) {
-        this.srcDirLenCum = srcDirLenCum;
-    }
-
-    public String getsrcDir() {
+    public String getSrcDir() {
         return srcDir;
     }
 
-    public List<File> getFilePathSet() {
+    public List<String> getFilePathSet(){
         return filePathSet;
     }
 
-    public filter getFileFilter() {
-        return fileFilter;
+
+    public void setFilterFile(String filterFileStr) {
+        String[] ignoreFiles = filterFileStr.split("\n");
+        FileFilter fileFilter = pathname -> !Arrays.asList(ignoreFiles).contains(pathname.getPath());
+        fileFilters.add(fileFilter);
     }
 
-    public List<String> getSelFilePath() {
-        return selFilePath;
+    public void setFilterDir(String filterDirStr) {
+        String[] ignoreDirs = filterDirStr.split("\n");
+        FileFilter dirFilter = pathname -> {
+            for(String ignoreDir : ignoreDirs){
+                if(pathname.getPath().contains(ignoreDir))
+                    return false;
+            }
+            return true;
+        };
+        fileFilters.add(dirFilter);
     }
 
-    // 过滤器
-    private static class filter{
-        String[] type;
-        String[] name;
-        int maxSize;
-        int minSize;
-        String Time;
+    public void setFilterFormat(String filterFormatStr, String choice) {
+        String[] ignoreFormats = filterFormatStr.split("\n");
+        boolean choiceFlag;
+
+        if(choice.equals("包含"))
+            choiceFlag = true;
+        else {
+            choiceFlag = false;
+        }
+        FileFilter formatFilter = pathname -> {
+            for(String format : ignoreFormats){
+                if(pathname.getPath().endsWith(format))
+                    return true&&choiceFlag;
+            }
+            return false&&choiceFlag;
+        };
+        fileFilters.add(formatFilter);
     }
+
+    public void setFilterName(String filterNameStr, String choice) {
+        String[] ignoreNames = filterNameStr.split("\n");
+        boolean choiceFlag;
+
+        if(choice.equals("包含"))
+            choiceFlag = true;
+        else {
+            choiceFlag = false;
+        }
+        FileFilter nameFilter = pathname -> {
+            for(String name : ignoreNames){
+                if(pathname.getName().contains(name))
+                    return true&&choiceFlag;
+            }
+            return false&&choiceFlag;
+        };
+        fileFilters.add(nameFilter);
+    }
+
+    private void initComFilter(){
+        // 总的filter
+        if(fileFilters.size()>0){
+            comFilter = (FileFilter) pathname -> {
+                boolean flag = true;
+                for(FileFilter filter:fileFilters){
+                    flag = flag && filter.accept(pathname);
+                }
+                return flag;
+            };
+        }
+        else
+            comFilter = null;
+    };
 
     // 遍历源目录中所有文件
-    private List<File> fileWalk(String srcDir){
-        List<File> filePathSet = new ArrayList<File>();
+    private List<String> fileWalk(String srcDir, FileFilter comFilter){
+        List<String> filePathSet = new ArrayList<>();
 
         fileWalkLoop(srcDir, filePathSet);
-
+        filePathSet.removeIf(filePath -> !comFilter.accept(new File(filePath)));
+        filePathSet.replaceAll(s -> s.replace(srcDir+File.separator, ""));
         return filePathSet;
     }
-
-    // todo: 过滤器的具体设计
-    // 源目录文件筛选
-    // todo: 这里可以将文件的输入改为file类型，从输入上改而不是在这里转换
-    private List<String> fileSelect(List<File> filePathSet, filter fileFilter){
-        List<File> selFiles = filePathSet;
-        List<String> selFilePath = new ArrayList<>();
-
-        // 筛选器
-        // 文件格式
-        FileFilter formatFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return false;
-            }
-        };
-
-        // 大小
-        FileFilter sizeFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return false;
-            }
-        };
-
-        // 名字
-        FileFilter nameFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return false;
-            }
-        };
-
-        // 路径
-        FileFilter pathFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return false;
-            }
-        };
-
-        // 时间
-        FileFilter timeFilter = new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return false;
-            }
-        };
-
-        for(File file:selFiles){
-            selFilePath.add(file.getPath());
-        }
-
-        // 文件路径处理
-        String rDir = srcDir+File.separator;
-        selFilePath.replaceAll(s -> s.replace(rDir, ""));
-
-        return selFilePath;
-    }
-
 }
 
 

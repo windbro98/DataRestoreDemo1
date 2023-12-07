@@ -12,20 +12,22 @@ public class ClassTest {
         String srcDir = "OriginalData";
         String backDir = "BackupData";
         String resDir = "RestoreData";
+        String filter = ".png\n.jpg";
         String compType = "";
         String encryType = "";
 
-        SrcManager srcM = new SrcManager();
-        BackManager backM = new BackManager();
-        ResManager resM = new ResManager();
+        SrcManager srcM = SrcManager.getInstance();
+        BackManager backM = BackManager.getInstance();
+        ResManager resM = ResManager.getInstance();
+        srcM.setFilterFormat(filter, "包含");
         srcM.initSrcManager(srcDir);
         backM.initBackManager(backDir, compType, encryType);
         resM.initResManager(resDir, compType, encryType);
         System.out.println("所有源文件相对路径：");
-        System.out.println(srcM.getSelFilePath());
+        System.out.println(srcM.getFilePathSet());
 //
         // 备份
-        backM.fileExtract(srcM.getSelFilePath(), srcM.getsrcDir());
+        backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
         String backFilePath = backM.getBackFilePath();
         backM.setBackFilePath(backFilePath);
         System.out.println("备份文件位置：");
