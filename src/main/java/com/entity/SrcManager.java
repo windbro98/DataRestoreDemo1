@@ -50,7 +50,7 @@ public class SrcManager {
 
     public void setFilterFile(String filterFileStr) {
         String[] ignoreFiles = filterFileStr.split("\n");
-        FileFilter fileFilter = pathname -> !Arrays.asList(ignoreFiles).contains(pathname.getPath());
+        FileFilter fileFilter = pathname -> !Arrays.asList(ignoreFiles).contains(pathname.getAbsolutePath());
         fileFilters.add(fileFilter);
     }
 
@@ -58,7 +58,7 @@ public class SrcManager {
         String[] ignoreDirs = filterDirStr.split("\n");
         FileFilter dirFilter = pathname -> {
             for(String ignoreDir : ignoreDirs){
-                if(pathname.getPath().contains(ignoreDir))
+                if(pathname.getAbsolutePath().contains(ignoreDir))
                     return false;
             }
             return true;
@@ -133,9 +133,9 @@ public class SrcManager {
                 BasicFileAttributes attrs = Files.readAttributes(pathname.toPath(), BasicFileAttributes.class);
                 LocalDateTime time=null;
                 switch (timeType) {
-                    case "create" -> time = LocalDateTime.ofInstant(attrs.lastModifiedTime().toInstant(), TimeZone.getDefault().toZoneId());
                     case "modified" -> time = LocalDateTime.ofInstant(attrs.lastModifiedTime().toInstant(), TimeZone.getDefault().toZoneId());
-                    case  "access" -> time = LocalDateTime.ofInstant(attrs.lastAccessTime().toInstant(), TimeZone.getDefault().toZoneId());
+                    case "access" -> time = LocalDateTime.ofInstant(attrs.lastAccessTime().toInstant(), TimeZone.getDefault().toZoneId());
+                    case "create" -> time = LocalDateTime.ofInstant(attrs.creationTime().toInstant(), TimeZone.getDefault().toZoneId());
                 }
                 return (time.isAfter(dateStart) && time.isBefore(dateEnd)) == choiceFlag;
             } catch (IOException e) {

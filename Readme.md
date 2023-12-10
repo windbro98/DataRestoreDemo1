@@ -135,7 +135,19 @@ class RegexExample1{
 
 https://www.tenforums.com/tutorials/139015-enable-disable-ntfs-last-access-time-stamp-updates-windows-10-a.html
 
+4. 筛选测试：
 
+   nameFilter: filteredName
+
+   sizeFilter: 56-57
+
+   modifiedTimeFilter: 1998-10-10 10:00:00 - 1998-10-10 10:02:00
+
+   createTimeFilter: 1998-10-10 10:00:00 - 1998-10-10 10:02:00
+
+   accessTimeFilter: 1998-10-10 10:00:00 - 1998-10-10 10:02:00
+
+   
 
 ### 技术栈
 1. 将指定目录下的文件全部备份到**一个文件**中 (done)
