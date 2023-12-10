@@ -11,7 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.min;
 
@@ -24,17 +27,22 @@ public class FileToolUtil {
     // 获取文件元数据
     public static String[] getMetaData(File file) throws IOException {
         String owner, creationTime, lastAccessTime, lastModifiedTime, filePermission;
+//        file = new File("D:\\learning_programs\\java_programs\\javaFX_demo\\Readme.md");
+
         Path path = file.toPath();
         FileOwnerAttributeView ownerAttributeView = Files.getFileAttributeView(path, FileOwnerAttributeView.class);
         BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
         BasicFileAttributes attributes = basicFileAttributeView.readAttributes();
 
+
+        // 时间，包括创建时间、最后访问时间和最后修改时间
+        lastAccessTime = String.valueOf(attributes.lastAccessTime().toMillis());
+        creationTime = String.valueOf(attributes.creationTime().toMillis());
+        lastModifiedTime = String.valueOf(attributes.lastModifiedTime().toMillis());
         // 属主
         owner = ownerAttributeView.getOwner().getName();
-        // 时间，包括创建时间、最后访问时间和最后修改时间
-        creationTime = String.valueOf(attributes.creationTime().toMillis());
-        lastAccessTime = String.valueOf(attributes.lastAccessTime().toMillis());
-        lastModifiedTime = String.valueOf(attributes.lastModifiedTime().toMillis());
+        // 查看当前的时间
+//        LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(lastAccessTime)), TimeZone.getDefault().toZoneId())
         // 权限
         int filePermissionInt = 0;
         if(file.canExecute()) filePermissionInt += 1;
@@ -46,7 +54,7 @@ public class FileToolUtil {
     }
 
     // 设置文件元数据
-    public static void setMetaData(File file, String[] metaData) throws IOException {
+    public static void setMetaData(File file, String[] metaData) throws IOException{
         String owner=metaData[0], creationTime=metaData[1], lastAccessTime=metaData[2], lastModifiedTime=metaData[3], filePermission=metaData[4];
 
         Path filePath = Paths.get(file.getAbsolutePath());
@@ -67,6 +75,7 @@ public class FileToolUtil {
         if((filePermisson>>2)%2==1) file.setWritable(true);
 
         // lastModifiedTime, lastAccessTime, creationTime
+
         BasicFileAttributeView attributes = Files.getFileAttributeView(filePath, BasicFileAttributeView.class);
         attributes.setTimes(
                 FileTime.fromMillis(Long.parseLong(lastModifiedTime)), // lastModifiedTime

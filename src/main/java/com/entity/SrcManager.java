@@ -6,10 +6,17 @@ package com.entity;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.nio.file.DirectoryStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.util.*;
 
 import static com.util.FileToolUtil.fileWalkLoop;
 
@@ -41,7 +48,6 @@ public class SrcManager {
         return filePathSet;
     }
 
-
     public void setFilterFile(String filterFileStr) {
         String[] ignoreFiles = filterFileStr.split("\n");
         FileFilter fileFilter = pathname -> !Arrays.asList(ignoreFiles).contains(pathname.getPath());
@@ -72,9 +78,9 @@ public class SrcManager {
         FileFilter formatFilter = pathname -> {
             for(String format : ignoreFormats){
                 if(pathname.getPath().endsWith(format))
-                    return true&&choiceFlag;
+                    return choiceFlag;
             }
-            return false&&choiceFlag;
+            return !choiceFlag;
         };
         fileFilters.add(formatFilter);
     }
@@ -91,17 +97,58 @@ public class SrcManager {
         FileFilter nameFilter = pathname -> {
             for(String name : ignoreNames){
                 if(pathname.getName().contains(name))
-                    return true&&choiceFlag;
+                    return choiceFlag;
             }
-            return false&&choiceFlag;
+            return !choiceFlag;
         };
         fileFilters.add(nameFilter);
+    }
+
+    public void setFilterSize(long sizeMin, long sizeMax, String choice){
+        boolean choiceFlag;
+
+        if(choice.equals("包含"))
+            choiceFlag = true;
+        else {
+            choiceFlag = false;
+        }
+        FileFilter sizeFilter = pathname -> {
+            long fileSize = pathname.length() / 1024;
+            return ((fileSize >= sizeMin) && (fileSize <= sizeMax)) == choiceFlag;
+        };
+        fileFilters.add(sizeFilter);
+    }
+
+    // todo: 主要修改时间格式问题
+    public void setFilterTime(LocalDateTime dateStart, LocalDateTime dateEnd, String timeType, String choice){
+        boolean choiceFlag;
+
+        if(choice.equals("包含"))
+            choiceFlag = true;
+        else {
+            choiceFlag = false;
+        }
+        FileFilter timeFilter = pathname -> {
+            try {
+                BasicFileAttributes attrs = Files.readAttributes(pathname.toPath(), BasicFileAttributes.class);
+                LocalDateTime time=null;
+                switch (timeType) {
+                    case "create" -> time = LocalDateTime.ofInstant(attrs.lastModifiedTime().toInstant(), TimeZone.getDefault().toZoneId());
+                    case "modified" -> time = LocalDateTime.ofInstant(attrs.lastModifiedTime().toInstant(), TimeZone.getDefault().toZoneId());
+                    case  "access" -> time = LocalDateTime.ofInstant(attrs.lastAccessTime().toInstant(), TimeZone.getDefault().toZoneId());
+                }
+                return (time.isAfter(dateStart) && time.isBefore(dateEnd)) == choiceFlag;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        };
+        fileFilters.add(timeFilter);
     }
 
     private void initComFilter(){
         // 总的filter
         if(fileFilters.size()>0){
-            comFilter = (FileFilter) pathname -> {
+            comFilter =  pathname -> {
                 boolean flag = true;
                 for(FileFilter filter:fileFilters){
                     flag = flag && filter.accept(pathname);
@@ -118,7 +165,8 @@ public class SrcManager {
         List<String> filePathSet = new ArrayList<>();
 
         fileWalkLoop(srcDir, filePathSet);
-        filePathSet.removeIf(filePath -> !comFilter.accept(new File(filePath)));
+        if(comFilter != null)
+            filePathSet.removeIf(filePath -> !comFilter.accept(new File(filePath)));
         filePathSet.replaceAll(s -> s.replace(srcDir+File.separator, ""));
         return filePathSet;
     }

@@ -2,30 +2,34 @@ package com.ui;
 
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
+import atlantafx.base.util.IntegerStringConverter;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.entity.SrcManager;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
-import javafx.stage.Window;
+import javafx.util.converter.DateTimeStringConverter;
+import javafx.util.converter.LocalDateTimeStringConverter;
+import javafx.util.converter.LongStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.material2.Material2MZ;
-import org.kordamp.ikonli.feather.Feather;
-import javafx.scene.Node;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Material;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 import static com.util.FileToolUtil.tfIsEmpty;
@@ -36,13 +40,14 @@ import static com.util.StyleUtil.createPopup;
 public class PageFactory {
 
     public static Material2MZ btnFileIcon = Material2MZ.PAGEVIEW;
+    public static DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
     // 构造方法私有化
     private PageFactory(){
     }
 
     // 备份页面初始化
-    // todo: 这里可以将textprompt等内容都修改进来，使用getChildren.get来获取相关的组件
     public static VBox initBackupPage(StackPane rootSp){
         VBox backupPage = new VBox();
 
@@ -55,7 +60,11 @@ public class PageFactory {
         // 文件名选择
         InputGroup nameGroup = createTextFilterGroup("文件名");
         // 文件大小选择
+        InputGroup sizeGroup = createSizeFilterGroup();
         // 文件时间选择
+        InputGroup createTimeGroup = createTimeFilterGroup("创建时间");
+        InputGroup modifiedTimeGroup = createTimeFilterGroup("修改时间");
+        InputGroup accessTimeGroup = createTimeFilterGroup("访问时间");
         // 文件与目录路径选择
         InputGroup fileGroup = createFileFilterGroup("排除文件路径", true);
         InputGroup dirGroup = createFileFilterGroup("排除目录路径", false);
@@ -63,12 +72,14 @@ public class PageFactory {
         Button btnSubmit = new Button("提交");
         Button btnClear = new Button("清空");
         HBox hb = new HBox(btnSubmit, btnClear);
-        backupPage.getChildren().addAll(srcGroup, backupGroup, formatGroup, nameGroup, fileGroup, dirGroup, hb);
+        backupPage.getChildren().addAll(srcGroup, backupGroup, formatGroup, nameGroup, sizeGroup, createTimeGroup,
+                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, hb);
         //
         TextField tfSrc = (TextField) srcGroup.getChildren().get(1);
         TextField tfBackupSave = (TextField) backupGroup.getChildren().get(1);
 
-        btnBackup(btnSubmit, btnClear, tfSrc, tfBackupSave, formatGroup, nameGroup, fileGroup, dirGroup,  rootSp);
+        btnBackup(btnSubmit, btnClear, tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup,
+                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup,  rootSp);
         return backupPage;
     };
 
@@ -89,6 +100,41 @@ public class PageFactory {
         return restorePage;
     }
 
+    // 时间输入框
+    private static InputGroup createTimeFilterGroup(String prompt){
+        InputGroup res = new InputGroup();
+        CheckBox cb = new CheckBox(prompt);
+        TextField timeStart = new TextField();
+        TextField timeEnd = new TextField();
+        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"});
+
+        cob.setValue("排除");
+        res.getChildren().add(cb);
+        timeStart.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
+        timeEnd.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
+        res.getChildren().addAll(timeStart, timeEnd, cob);
+
+        return res;
+    }
+
+    // 大小输入框
+    private static InputGroup createSizeFilterGroup(){
+        CheckBox cb = new CheckBox("文件大小");
+        TextField sizeMin = new TextField();
+        TextField sizeMax = new TextField();
+        TextField sizeUnit1 = new TextField("KB");
+        TextField sizeUnit2 = new TextField("KB");
+
+        sizeUnit1.setEditable(false);
+        sizeUnit2.setEditable(false);
+        sizeMin.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        sizeMax.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
+        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"});
+        cob.setValue("排除");
+
+        return new InputGroup(cb, sizeMin, sizeUnit1, sizeMax, sizeUnit2, cob);
+    }
+
     // 文本框组合，使用的是textField
     private static InputGroup createInputGroup(String prompt, boolean isFile){
         // 提示文本框
@@ -107,47 +153,19 @@ public class PageFactory {
     // fileType: 0-目录；1-文件；2-目录+文件
     public static InputGroup createTextFilterGroup(String prompt){
         TextArea ta = new TextArea();
-        ta.setEditable(false);
+        CheckBox cb = new CheckBox(prompt);
+
         ChoiceBox cob = createChoiceBox(new String[]{"包含", "排除"});
         cob.setValue("排除");
-        EventHandler eh = (EventHandler<ActionEvent>) event -> {
-            if(event.getSource() instanceof CheckBox){
-                CheckBox chk = (CheckBox) event.getSource();
-                if(chk.isSelected())
-                    ta.setEditable(true);
-                else
-                    ta.setEditable(false);
-            }
-        };
 
-        CheckBox cb = new CheckBox(prompt);
-        cb.setOnAction(eh);
         return new InputGroup(cb, ta, cob);
     }
 
     public static InputGroup createFileFilterGroup(String prompt, boolean isFile){
         TextArea ta = new TextArea();
-        ta.setEditable(false);
         CheckBox cb = new CheckBox(prompt);
         Button btn=createBtnFileChoose(ta, isFile);
-        InputGroup res = new InputGroup(cb, ta);
-        EventHandler eh = (EventHandler<ActionEvent>) event -> {
-            if(event.getSource() instanceof CheckBox){
-                CheckBox chk = (CheckBox) event.getSource();
-                if(chk.isSelected()){
-                    ta.setEditable(true);
-                    res.getChildren().add(btn);
-                }
-                else{
-                    ta.setEditable(false);
-                    res.getChildren().remove(btn);
-                    ta.clear();
-                }
-            }
-        };
-
-        cb.setOnAction(eh);
-        return res;
+        return new InputGroup(cb, ta, btn);
     }
 
     public static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
@@ -195,13 +213,15 @@ public class PageFactory {
 
     // 备份页面的提交按钮
     public static void btnBackup(Button btnSubmit, Button btnClear, TextField tfSrc, TextField tfBackupSave,
-                                 InputGroup formatGroup, InputGroup nameGroup, InputGroup fileGroup, InputGroup dirGroup,
-                                 StackPane rootSp){
+                                 InputGroup formatGroup, InputGroup nameGroup, InputGroup sizeGroup,
+                                 InputGroup createTimeGroup, InputGroup modifiedTimeGroup, InputGroup accessTimeGroup,
+                                 InputGroup fileGroup, InputGroup dirGroup, StackPane rootSp){
         SrcManager srcM = SrcManager.getInstance();
         BackManager backM = BackManager.getInstance();
         // 清空
         btnClear.setOnMouseClicked(mouseEvent -> {
-            backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, fileGroup, dirGroup);
+            backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup, modifiedTimeGroup,
+                    accessTimeGroup, fileGroup, dirGroup);
         });
 
         btnSubmit.setOnMouseClicked(mouseEvent -> { // 点击
@@ -216,7 +236,8 @@ public class PageFactory {
                 if(res.get().getText().equals("Yes")){
                     try {
                         // 源文件管理器和备份文件管理器初始化
-                        initFilter(formatGroup, nameGroup, fileGroup, dirGroup);
+                        initFilter(formatGroup, nameGroup, sizeGroup, createTimeGroup,
+                                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup);
                         srcM.initSrcManager(tfSrc.getText());
                         backM.initBackManager(tfBackupSave.getText(), "", "");
                         // 备份文件提取
@@ -227,7 +248,8 @@ public class PageFactory {
                         else
                             createPopup("文件备份失败！备份目录不存在！", rootSp); // 备份失败
                         // 清空文本框，准备下次备份
-                        backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, fileGroup, dirGroup);
+                        backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup, modifiedTimeGroup,
+                                accessTimeGroup, fileGroup, dirGroup);
                     } catch (InterruptedException e) {
                         // 错误：超时
                         throw new RuntimeException(e);
@@ -238,18 +260,40 @@ public class PageFactory {
     }
 
     public static void backupClear(TextField tfSrc, TextField tfBackupSave, InputGroup formatGroup, InputGroup nameGroup,
-                                   InputGroup fileGroup, InputGroup dirGroup){
-        TextArea taFormat = (TextArea) formatGroup.getChildren().get(1);
-        TextArea taName = (TextArea) nameGroup.getChildren().get(1);
-        TextArea taFile = (TextArea) fileGroup.getChildren().get(1);
-        TextArea taDir = (TextArea) dirGroup.getChildren().get(1);
+                                   InputGroup sizeGroup, InputGroup createTimeGroup, InputGroup modifiedTimeGroup,
+                                   InputGroup accessTimeGroup, InputGroup fileGroup, InputGroup dirGroup){
+        ArrayList<InputGroup> taArr = new ArrayList<>();
+        ArrayList<InputGroup> timeArr = new ArrayList<>();
+        CheckBox cb;
 
+        taArr.addAll(Arrays.asList(formatGroup, nameGroup, fileGroup, dirGroup));
+        timeArr.addAll(Arrays.asList(createTimeGroup, modifiedTimeGroup, accessTimeGroup));
+        // 文本框
         tfSrc.clear();
         tfBackupSave.clear();
-        taFormat.clear();
-        taName.clear();
-        taFile.clear();
-        taDir.clear();
+        // textArea型InputGroup
+        for(InputGroup ig:taArr){
+            cb = (CheckBox) ig.getChildren().get(0);
+            TextArea ta = (TextArea) ig.getChildren().get(1);
+            ta.clear();
+            if(cb.isSelected()) cb.setSelected(false);
+        }
+        // time型InputGroup
+        for(InputGroup ig:timeArr){
+            cb = (CheckBox) ig.getChildren().get(0);
+            TextField tfStart = (TextField) ig.getChildren().get(1);
+            TextField tfEnd = (TextField) ig.getChildren().get(2);
+            tfStart.clear();
+            tfEnd.clear();
+            if(cb.isSelected()) cb.setSelected(false);
+        }
+        // long型InputGroup
+        cb = (CheckBox) sizeGroup.getChildren().get(0);
+        TextField tfMin = (TextField) sizeGroup.getChildren().get(1);
+        TextField tfMax = (TextField) sizeGroup.getChildren().get(3);
+        tfMin.clear();
+        tfMax.clear();
+        if(cb.isSelected()) cb.setSelected(false);
     }
 
     // 恢复提交按钮触发效果
@@ -300,13 +344,20 @@ public class PageFactory {
         });
     }
 
-    public static void initFilter(InputGroup formatGroup, InputGroup nameGroup, InputGroup fileGroup, InputGroup dirGroup){
+    public static void initFilter(InputGroup formatGroup, InputGroup nameGroup, InputGroup sizeGroup,
+                                  InputGroup createTimeGroup, InputGroup modifiedTimeGroup, InputGroup accessTimeGroup,
+                                  InputGroup fileGroup, InputGroup dirGroup){
         CheckBox cbFormat = (CheckBox) formatGroup.getChildren().get(0);
         CheckBox cbName = (CheckBox) nameGroup.getChildren().get(0);
+        CheckBox cbSize = (CheckBox) sizeGroup.getChildren().get(0);
+        CheckBox cbCreateTime = (CheckBox) createTimeGroup.getChildren().get(0);
+        CheckBox cbModifiedTime = (CheckBox) modifiedTimeGroup.getChildren().get(0);
+        CheckBox cbAccessTime = (CheckBox) accessTimeGroup.getChildren().get(0);
         CheckBox cbFile = (CheckBox) fileGroup.getChildren().get(0);
         CheckBox cbDir = (CheckBox) dirGroup.getChildren().get(0);
         SrcManager srcM = SrcManager.getInstance();
         TextArea ta;
+        TextField tfStart, tfEnd;
         ChoiceBox cob;
 
         if(cbFormat.isSelected()){
@@ -319,6 +370,34 @@ public class PageFactory {
             cob = (ChoiceBox) nameGroup.getChildren().get(2);
             srcM.setFilterName(ta.getText(), (String) cob.getValue());
         }
+        if(cbSize.isSelected()){
+            tfStart = (TextField) sizeGroup.getChildren().get(1);
+            tfEnd = (TextField) sizeGroup.getChildren().get(3);
+            cob = (ChoiceBox) sizeGroup.getChildren().get(5);
+            srcM.setFilterSize(Long.parseLong(tfStart.getText()), Long.parseLong(tfEnd.getText()), (String) cob.getValue());
+        }
+        if(cbCreateTime.isSelected()){
+            tfStart = (TextField) createTimeGroup.getChildren().get(1);
+            tfEnd = (TextField) createTimeGroup.getChildren().get(2);
+            cob = (ChoiceBox) createTimeGroup.getChildren().get(3);
+            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
+                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "create", (String) cob.getValue());
+        }
+        if(cbModifiedTime.isSelected()){
+            tfStart = (TextField) modifiedTimeGroup.getChildren().get(1);
+            tfEnd = (TextField) modifiedTimeGroup.getChildren().get(2);
+            cob = (ChoiceBox) modifiedTimeGroup.getChildren().get(3);
+            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
+                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "modified", (String) cob.getValue());
+        }
+        if(cbAccessTime.isSelected()){
+            tfStart = (TextField) accessTimeGroup.getChildren().get(1);
+            tfEnd = (TextField) accessTimeGroup.getChildren().get(2);
+            cob = (ChoiceBox) accessTimeGroup.getChildren().get(3);
+            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
+                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "access", (String) cob.getValue());
+        }
+
         if(cbFile.isSelected()){
             ta = (TextArea) fileGroup.getChildren().get(1);
             srcM.setFilterFile(ta.getText());

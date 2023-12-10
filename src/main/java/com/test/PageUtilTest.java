@@ -7,7 +7,7 @@ import static com.util.FileToolUtil.*;
 import static com.util.PageManagerUtil.filePaged;
 
 public class PageUtilTest {
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
 //        // 备份测试
         String inFileName1 = "java学习笔记1.pdf";
         String srcRoot = "OriginalData";

@@ -5,6 +5,11 @@ import com.entity.ResManager;
 import com.entity.SrcManager;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class ClassTest {
@@ -15,11 +20,14 @@ public class ClassTest {
         String filter = ".png\n.jpg";
         String compType = "";
         String encryType = "";
-
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime timeStart = LocalDateTime.from(timeFormat.parse("2023-10-10 10:02:00"));
+        LocalDateTime timeEnd = LocalDateTime.from(timeFormat.parse("2023-10-10 10:03:00"));
         SrcManager srcM = SrcManager.getInstance();
         BackManager backM = BackManager.getInstance();
         ResManager resM = ResManager.getInstance();
-        srcM.setFilterFormat(filter, "包含");
+//        srcM.setFilterFormat(filter, "包含");
+        srcM.setFilterTime(timeStart, timeEnd, "modified", "排除");
         srcM.initSrcManager(srcDir);
         backM.initBackManager(backDir, compType, encryType);
         resM.initResManager(resDir, compType, encryType);

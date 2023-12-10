@@ -36,7 +36,7 @@ public class ResManager {
     }
 
     // 备份文件恢复，返回错误的文件
-    public ArrayList<String> fileRestore(String backFilePath) throws IOException, ClassNotFoundException {
+    public ArrayList<String> fileRestore(String backFilePath) throws IOException, ClassNotFoundException{
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
@@ -52,7 +52,7 @@ public class ResManager {
     }
 
     // 单个文件恢复
-    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException {
+    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException{
         // 获取恢复文件名
         String resFileName = getResFileName(is);
         String resFilePath = fileConcat(resRoot, resFileName);

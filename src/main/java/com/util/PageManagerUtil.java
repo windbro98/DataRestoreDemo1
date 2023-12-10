@@ -191,6 +191,7 @@ public class PageManagerUtil {
         // 尾页面
         // 尾页面的所有数据由三部分组成：文件名+文件数据+空白
         os.write(tmpPage.pageData, tmpPage.getNameLen()+tmpPage.getMetaLen(), tmpPage.getDataLen());
+        os.close();
     }
 
     /*

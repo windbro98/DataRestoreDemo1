@@ -87,19 +87,23 @@ class RegexExample1{
 
    Huffman编码：https://blog.csdn.net/weixin_37610397/article/details/80222991
 
-   https://blog.csdn.net/kaerbuka/article/details/90762178
+   https://blog.csdn.net/kaerbuka/article/details/90762178 （考虑使用这个，先将byte[]转化为String，应该并不困难）
 
    https://www.cnblogs.com/yu-kunpeng/p/10087415.html
 
    LZ77算法：（外网）
 
-   https://gist.github.com/fogus/5404660
+   https://gist.github.com/fogus/5404660 (考虑使用)
 
    https://commons.apache.org/proper/commons-compress/jacoco/org.apache.commons.compress.compressors.lz77support/LZ77Compressor.java.html
 
 9. 加密解密：使用openssl库（不建议使用openssl的底层库，推荐使用最新的EVP API），也可以尝试手写实现AES的CBC模式
 
-   
+10. 数值区域设置
+
+    https://stackoverflow.com/questions/40472668/numeric-textfield-for-integers-in-javafx-8-with-textformatter-and-or-unaryoperat
+
+    
 
 ### 开发进度
 1. v1: 基本的GUI界面、备份和恢复函数 done
@@ -116,8 +120,22 @@ class RegexExample1{
    
    v3.5: 基本将meta-data加入到恢复过程中，但是存在两个漏洞：i. owner只能通过cmd进行设置，否则无权限；ii. accessTime恢复问题
 
+4. v4
+
+   v4.1: GUI代码重构
+
+   v4.2: 添加了对format, name, file, type的筛选支持
+
 ### 代码注意
 1. 在FileToolUtil中，有readPage函数，其中含有测试文件损坏部分
+1. 输入时间格式：yyyy-MM-dd HH:mm:ss
+1. 对于lastAccessTime, 现在的windows版本并不支持自动更新lastAccessTime（一小时之内不更新），但是java中获取的是更新后的lastAccessTime，因此出现了不对齐。
+
+![image-20231209201009536](D:\learning_programs\java_programs\DataRestoreDemo1\images\Readme\image-20231209201009536.png)
+
+https://www.tenforums.com/tutorials/139015-enable-disable-ntfs-last-access-time-stamp-updates-windows-10-a.html
+
+
 
 ### 技术栈
 1. 将指定目录下的文件全部备份到**一个文件**中 (done)
@@ -134,10 +152,20 @@ class RegexExample1{
 
 ### 现存问题(todo)
 1. 使用cyc循环校验，如果帧的data内容错误，则仍然恢复该文件，但是返回信息提示该文件错误（如果发生在head上，则无可奈何。如果文件类型损坏，可以在设置中手动跳过，如果有时间再写）
-2. 对文件进行筛选
-3. 对文件的元数据进行保存
-4. 压缩与解压
-5. 软硬链接
+
+2. 对lastAccessTime放弃解决，有StackOverFlow帖子称java上不可解决
+
+3. 待办：
+
+   i. 对输入的错误格式进行警告（比如某个空为空等、输入的路径格式错误等）
+
+   ii. 进行错误文件的整理，将文件按照时间、大小等筛选格式进行各自的文件夹处理，从而使得最终的测试更加有序
+
+4. 现在的待办
+
+5. 压缩与解压
+
+6. 软硬链接
 
 代码细节：
 
