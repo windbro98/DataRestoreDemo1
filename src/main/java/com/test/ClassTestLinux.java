@@ -16,11 +16,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-public class ClassTestWin {
+import static com.util.FileToolUtil.dirExistEval;
+
+public class ClassTestLinux {
     public static void main(String[] args) throws IOException, ClassNotFoundException, ParseException {
-        String srcDir = "OriginalDataWin";
+        String srcDir = "OriginalDataLinux";
         String backDir = "BackupData";
-        String resDir = "RestoreDataWin";
+        String resDir = "RestoreDataLinux";
         String compType = "";
         String encryType = "";
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -30,9 +32,9 @@ public class ClassTestWin {
         BackManager backM = BackManager.getInstance();
         ResManager resM = ResManager.getInstance();
 
-        // 提前处理源文件时间
+//         提前处理源文件时间
         for (int i = 0; i < 3; i++) {
-            setTimeWin(i);
+            setTimeLinux(i);
         }
         // 清空文件夹
         delete(resDir);
@@ -42,9 +44,9 @@ public class ClassTestWin {
         srcM.setFilterTime(timeStart, timeEnd, "create", "排除");
         srcM.setFilterTime(timeStart, timeEnd, "modified", "排除");
         srcM.setFilterTime(timeStart, timeEnd, "access", "排除");
-        srcM.setFilterSize(56, 57, "排除");
-        srcM.setFilterFile("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\fileFilter\\filteredFile.txt");
-        srcM.setFilterDir("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\dirFilter\\filteredDir");
+        srcM.setFilterSize(55, 56, "排除");
+        srcM.setFilterFile("/home/nemosteven/Desktop/programs/DataRestoreDemo1/OriginalDataLinux/filter/fileFilter/filteredFile.txt");
+        srcM.setFilterDir("/home/nemosteven/Desktop/programs/DataRestoreDemo1/OriginalDataLinux/filter/dirFilter/filteredDir");
         // 三大管理器初始化
         srcM.initSrcManager(srcDir);
         backM.initBackManager(backDir, compType, encryType);
@@ -76,14 +78,14 @@ public class ClassTestWin {
     }
 
     // 设置源文件时间，0 - modified, 1 - access, 2 - create
-    public static void setTimeWin(int timeType) throws IOException, ParseException {
+    public static void setTimeLinux(int timeType) throws IOException, ParseException {
         String filePath = null;
         FileTime setTime = transFileTime("1998-10-10 10:01:00");
 
         switch (timeType){
-            case 0 -> filePath = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\timeFilter\\modified\\filteredFile.txt";
-            case 1 -> filePath = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\timeFilter\\access\\filteredFile.txt";
-            case 2 -> filePath = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\timeFilter\\create\\filteredFile.txt";
+            case 0 -> filePath = "/home/nemosteven/Desktop/programs/DataRestoreDemo1/OriginalDataLinux/filter/timeFilter/modified/filteredFile.txt";
+            case 1 -> filePath = "/home/nemosteven/Desktop/programs/DataRestoreDemo1/OriginalDataLinux/filter/timeFilter/access/filteredFile.txt";
+            case 2 -> filePath = "/home/nemosteven/Desktop/programs/DataRestoreDemo1/OriginalDataLinux/filter/timeFilter/create/filteredFile.txt";
             default -> {
                 return;
             }
@@ -112,11 +114,7 @@ public class ClassTestWin {
         File file = new File(path);
 
         // 判断文件夹是否存在
-        if(!file.exists())  return;
-        else if(file.isFile()){
-            file.delete();
-            return;
-        }
+        dirExistEval(file);
         // 如果是一个目录，那么必须把该目录下的所有文件和子目录全部删除，才能删除该目标目录，这里要用到递归函数
         // 创建一个files数组，用来存放目标目录下所有的文件和目录的file对象
         File[] files = new File[50];
