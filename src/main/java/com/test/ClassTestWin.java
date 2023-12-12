@@ -106,17 +106,12 @@ public class ClassTestWin {
         attributeView.setTimes(lastModifiedTime, lastAccessTime, creationTime);
     }
 
-    // 删除文件夹以及其中的所有文件，或直接删除文件
+    // 删除文件或文件夹
     public static void delete(String path) {
         // 为传进来的路径参数创建一个文件对象
         File file = new File(path);
-
-        // 判断文件夹是否存在
-        if(!file.exists())  return;
-        else if(file.isFile()){
-            file.delete();
-            return;
-        }
+        // 如果目标路径是一个文件，那么直接调用delete方法删除即可
+        // file.delete();
         // 如果是一个目录，那么必须把该目录下的所有文件和子目录全部删除，才能删除该目标目录，这里要用到递归函数
         // 创建一个files数组，用来存放目标目录下所有的文件和目录的file对象
         File[] files = new File[50];

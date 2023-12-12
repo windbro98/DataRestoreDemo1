@@ -128,19 +128,14 @@ class RegexExample1{
 
 ### 代码注意
 1. 在FileToolUtil中，有readPage函数，其中含有测试文件损坏部分
-2. 输入时间格式：yyyy-MM-dd HH:mm:ss
-3. 对于lastAccessTime, 现在的windows版本并不支持自动更新lastAccessTime（一小时之内不更新），但是java中获取的是更新后的lastAccessTime，因此出现了不对齐。
+1. 输入时间格式：yyyy-MM-dd HH:mm:ss
+1. 对于lastAccessTime, 现在的windows版本并不支持自动更新lastAccessTime（一小时之内不更新），但是java中获取的是更新后的lastAccessTime，因此出现了不对齐。
 
 ![image-20231209201009536](D:\learning_programs\java_programs\DataRestoreDemo1\images\Readme\image-20231209201009536.png)
 
 https://www.tenforums.com/tutorials/139015-enable-disable-ntfs-last-access-time-stamp-updates-windows-10-a.html
 
-4. 在linux中，文件并不存在creationTime(实际存在的三个时间为：文件最近访问时间、最近修改时间、元数据修改时间)，同时java获取的creationTime与lastModifiedTime完全一致，
-因此过滤creationTime无效
-
-5. 筛选测试：
-
-**~ClassTestWin~**
+4. 筛选测试：
 
    nameFilter: filteredName
 
@@ -152,11 +147,7 @@ https://www.tenforums.com/tutorials/139015-enable-disable-ntfs-last-access-time-
 
    accessTimeFilter: 1998-10-10 10:00:00 - 1998-10-10 10:02:00
 
-**~ClassTestLinux~**
-
-nameFilter: filteredName
-
-sizeFilter: 55 (同样的文件在Linux上比在Windows上少1000B)
+   
 
 ### 技术栈
 1. 将指定目录下的文件全部备份到**一个文件**中 (done)

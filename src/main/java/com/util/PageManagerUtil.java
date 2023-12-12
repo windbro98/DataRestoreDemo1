@@ -33,7 +33,6 @@ public class PageManagerUtil {
 
         // dataStart：代表可以在该页面中写数据的初始索引位置
         pageStart = namePaged(os, fileName, fileType); // 文件名
-        // todo: 元数据的pageStart处理有问题，得到的数值大于256
         pageStart = metaPaged(os, inFile, pageStart, fileType); // 元数据
         dataPaged(is, os, pageStart); // 数据
     }
@@ -173,17 +172,10 @@ public class PageManagerUtil {
                 metaByte = new byte[tmpPage.getMetaLen()];
                 System.arraycopy(tmpPage.pageData, tmpPage.getNameLen(), metaByte, 0, tmpPage.getMetaLen());
             }
-            if(tmpPage.getMetaLen()==(Page.pageDataLen-tmpPage.getNameLen())) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
+            if(tmpPage.getMetaLen()==(Page.pageDataLen-tmpPage.nameLen)) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
                 readPage(is);
             else
                 break;
-        }
-
-        try{
-            String[] demo = (String[]) deByteArray(metaByte);
-        }
-        catch (EOFException e){
-            System.out.println("here");
         }
 
         return (String[]) deByteArray(metaByte);
@@ -230,7 +222,7 @@ public class PageManagerUtil {
         // 读取页面数据
         int realDataLen;
         if(dataStart>0){
-            byte[] tmpDataRemain = new byte[Page.pageDataLen-dataStart];
+            byte[] tmpDataRemain = new byte[Page.pageDataLen -dataStart];
             realDataLen = is.read(tmpDataRemain);
             System.arraycopy(tmpDataRemain, 0, tmpPage.pageData, dataStart, Page.pageDataLen-dataStart);
         }
@@ -244,7 +236,7 @@ public class PageManagerUtil {
     // 若文件名&元数据在本次未读完，则返回下一次文件名需要开始的位置；如果文件名在本次读完，则返回该帧下一个空的字节索引
     public static int copyByteArray(byte[] byteArray, int nameStart, int pageStart, int copyLen) throws IOException {
         int arrayLen = byteArray.length;
-        if(arrayLen-nameStart <= Page.pageDataLen-pageStart){
+        if(arrayLen-nameStart <= Page.pageDataLen){
             System.arraycopy(byteArray, nameStart, tmpPage.pageData, pageStart, copyLen);
             // 当文件名已读完的时候，返回-(当前帧第一个空闲位置坐标)
             return -(arrayLen-nameStart)-pageStart;

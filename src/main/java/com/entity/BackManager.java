@@ -21,10 +21,15 @@ public class BackManager {
     public static BackManager getInstance(){
         return INSTANCE;
     }
+
+
+
     private String backDir; // 备份文件目录
     private String compType; // 压缩方式
     private String encryType; // 编码方式
     private String backFilePath=""; // 备份文件路径
+
+
 
     public String getBackFilePath() {
         return backFilePath;

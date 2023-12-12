@@ -20,7 +20,6 @@ public class ResManager {
         return INSTANCE;
     }
     private String resDir; // 恢复文件目录
-    public static String resFileNow;
     private String compType; // 文件压缩方式
     private String encryType; // 文件编码方式
 
@@ -56,8 +55,8 @@ public class ResManager {
     public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException{
         // 获取恢复文件名
         String resFileName = getResFileName(is);
-        resFileNow = fileConcat(resRoot, resFileName);
-        File resFile = new File(resFileNow);
+        String resFilePath = fileConcat(resRoot, resFileName);
+        File resFile = new File(resFilePath);
         int fileType = getFileType();
 
         // 创建目录或文件
