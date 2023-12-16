@@ -11,7 +11,7 @@ class CRCTest {
 
         CRC crc = new CRC();
 
-        byte[] divided = {33, -48, 38, 37};
+        byte[] divided = {33, -48                                                                                                };
         String dividedBin = byteArray2binary(divided);
         System.out.println("原数据的二进制为：");
         System.out.println(dividedBin);

@@ -14,16 +14,16 @@ import static com.util.DataUtil.byteArray2binary;
 // 出于对其的目的，这里将生成的校验码也按照小端的方式解析为byte数据
 public class CRC {
     // 生成码
-    private int[] generatingCode={1, 0, 1, 0, 0, 0, 1, 1, 0};
+    private int[] generatingCode={1, 0, 1, 0, 0, 0, 1, 0, 1};
 
     // 获取帧检验序列，这里应该修改为tmpData的内容
     public byte getFCS(byte[] messageByte) {//传进来的是被除数
-        String message = byteArray2binary(messageByte);
+        StringBuilder message = new StringBuilder(byteArray2binary(messageByte));
         for (int i = 0; i < generatingCode.length - 1; i++) {
             //往后面加几个0（长度是比generatingCode的长度减1）
-            message += "0";
+            message.append("0");
         }
-        return getRemainder(stringToArray(message));
+        return getRemainder(stringToArray(message.toString()));
     }
 
     public boolean judge(byte[] messageByte, byte remainder){
@@ -50,17 +50,24 @@ public class CRC {
 
     // 求余数
     private byte getRemainder(int[] code) {
-        int len = code.length - generatingCode.length + 1;
-        for (int i = 0; i < len; i++) {
+        int genLen = generatingCode.length;
+        int dataLen = code.length - genLen + 1;
+        for (int i = 0; i < dataLen; i++) {
             if (code[i] != 0) {
-                for (int j = 0; j < generatingCode.length; j++) {
+                for (int j = 0; j < genLen; j++) {
                     code[i + j] ^= generatingCode[j];
                 }
             }
         }
+
         int res=0;
-        for (int i = 0; i < code.length-len; i++) {
-            res += (code[i+len]<<i);
+//        // 小端存储
+//        for (int i = 0; i < code.length-len; i++) {
+//            res += (code[i+len]<<i);
+//        }
+        // 大端存储
+        for (int i = 0; i < genLen-1; i++) {
+            res += (code[dataLen+i] << (genLen-2-i)); // genLen-1是总的位数，genLen-2是2的次方数
         }
         return (byte) res;
     }

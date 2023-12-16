@@ -22,8 +22,6 @@ public class BackManager {
         return INSTANCE;
     }
 
-
-
     private String backDir; // 备份文件目录
     private String compType; // 压缩方式
     private String encryType; // 编码方式
