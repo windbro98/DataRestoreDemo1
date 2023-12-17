@@ -3,6 +3,7 @@ package com.util;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,5 +100,18 @@ public class DataUtil {
         strByte = new BigInteger(str, 2).toByteArray();
         // 根据是否以1开头，以1开头时翻译得到的byteArray开头为0（表示为负数），因此需要去掉
         return (str.startsWith("1")) ? Arrays.copyOfRange(strByte, 1, strByte.length) : strByte;
+    }
+
+    // 返回i代表子序列的初始位置，返回-1代表不是子序列
+    public static int idxSubArray(byte[] origArray, byte[] subArray){
+        int origLen = origArray.length;
+        int subLen = subArray.length;
+
+        for (int i = 0; i < origLen-subLen; i++) {
+            // 找不到不相同的字节，即为相同
+            if(Arrays.mismatch(Arrays.copyOfRange(origArray, i, i+subLen), subArray)==-1)
+                return i;
+        }
+        return -1;
     }
 }

@@ -11,9 +11,9 @@ public class HuffmanTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Huffman hm = new Huffman();
 
-        File backupFile = new File("BackupData/20231216_192957");
-        File compreFile = new File("BackupData/20231216_192957_compression");
-        File resFile = new File("BackupData/20231216_192957_rec");
+        File backupFile = new File("BackupData/20231217_091737");
+        File compreFile = new File("BackupData/20231217_091737_compression");
+        File resFile = new File("BackupData/20231217_091737_rec");
         byte a=-10;
 
         hm.encode(backupFile, compreFile);
