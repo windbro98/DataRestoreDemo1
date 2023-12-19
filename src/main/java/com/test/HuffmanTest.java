@@ -11,20 +11,19 @@ public class HuffmanTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         Huffman hm = new Huffman();
 
-        File backupFile = new File("BackupData/20231217_091737");
-        File compreFile = new File("BackupData/20231217_091737_compression");
-        File resFile = new File("BackupData/20231217_091737_rec");
-        byte a=-10;
+        File backupFile = new File("BackupData/20231218_174359");
+        File compreFile = new File("BackupData/20231218_174359.huffman");
 
-        hm.encode(backupFile, compreFile);
-        hm.decode(compreFile, resFile);
+//        hm.encode(backupFile);
+//        backupFile.delete();
+        hm.decode(compreFile);
 
 //         文件的恢复
         BackManager backM = BackManager.getInstance();
         ResManager resM = ResManager.getInstance();
-//
+////
         // 压缩还原
-        backM.initBackManager(resFile.getAbsolutePath(), "", "");
+        backM.initBackManager(backupFile.getAbsolutePath(), "", "");
 //        // 源文件
 ////        backM.initBackManager(backupFile.getAbsolutePath(), "", "");
         resM.initResManager("RestoreDataWin/", "", "");

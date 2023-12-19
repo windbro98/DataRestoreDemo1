@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import static com.util.DataUtil.*;
+import static com.util.FileToolUtil.fileExistEval;
 
 public class Huffman {
     final int byteNum = 256;
@@ -49,7 +50,8 @@ public class Huffman {
     }
 
     //编码方法，返回Object[]，大小为2,Object[0]为编码后的字符串，Object[1]为编码对应的码表
-    public void encode(File origFile, File comprFile) throws IOException {
+    public void encode(File origFile) throws IOException {
+        File comprFile = new File(origFile.getAbsoluteFile()+".huffman");
         FileInputStream is = new FileInputStream(origFile);
         long[] freqMap=new long[byteNum];
 
@@ -63,6 +65,12 @@ public class Huffman {
         is.close();
         is = new FileInputStream(origFile);
         compressFile(is, comprFile);
+        is.close();
+        // 将编码表写入新文件
+        File encodeFile = new File(origFile.getAbsoluteFile()+".encode");
+        fileExistEval(encodeFile, true);
+        FileOutputStream os = new FileOutputStream(encodeFile);
+        os.write(enByteArray(encodeMap));
         // 计算压缩比
         double comprRadio = getCompressionRadio(freqMap);
         System.out.println("当前的压缩比为："+ comprRadio);
@@ -180,25 +188,25 @@ public class Huffman {
     }
 
     //对字符串进行解码，解码时需要编码码表
-    public void decode(File comprFile, File origFile) throws IOException {
+    public void decode(File comprFile) throws IOException, ClassNotFoundException {
         // 缓冲处理字符串
-        FileInputStream is = new FileInputStream(comprFile);
+        File origFile = new File(comprFile.getAbsolutePath().replace(".huffman", ""));
+        fileExistEval(origFile, true);
         FileOutputStream os = new FileOutputStream(origFile);
         byte[] bufferIn = new byte[pageSize];
         byte[] bufferOut = new byte[pageSize];
 
-        int readNum;
-
-        // 构建decodeMap
-        HashMap<String, Byte> decodeMap = new HashMap<>();
-        for (int i = 0; i < byteNum; i++) {
-            decodeMap.put(encodeMap[i], (byte)i);
-        }
+        // 获取编码表
+        File encodeFile = new File(origFile.getAbsolutePath()+".encode");
+        FileInputStream is = new FileInputStream(encodeFile);
+        encodeMap = (String[]) deByteArray(is.readAllBytes());
 
         // 缓冲字符串，在读取文件的过程中不断进行处理
         String bufferStr = "";
         long recoverSize = 0;
         int idxOutNew=0;
+        int readNum;
+        is = new FileInputStream(comprFile);
         while((readNum=is.read(bufferIn)) != -1){
             // 将本次读取的字符串添加到bufferStr中
             // 这里的选择主要是针对最后一次读取读不满的现象
@@ -229,6 +237,7 @@ public class Huffman {
                 }
             }
         }
+        is.close();
         System.out.println("恢复的字节数为："+recoverSize);
     }
 }

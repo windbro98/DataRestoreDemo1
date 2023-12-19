@@ -73,6 +73,7 @@ public class ResManager {
             setMetaData(resFile, metaData);
         } else {
             // 如果该对象是文件，则先恢复数据，后设置元数据
+            // todo: 当使用huffman编码的时候，这里出错，最终的读取数据居然不为256
             dataRestore(is, resFile);
             setMetaData(resFile, metaData);
         }
