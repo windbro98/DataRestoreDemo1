@@ -99,6 +99,16 @@ class RegexExample1{
 
 9. 加密解密：使用openssl库（不建议使用openssl的底层库，推荐使用最新的EVP API），也可以尝试手写实现AES的CBC模式
 
+   aes参考下载的c代码
+
+   aes简介： https://www.simplilearn.com/tutorials/cryptography-tutorial/aes-encryption
+   
+   key-expansion: https://www.brainkart.com/article/AES-Key-Expansion_8410/   (这里针对非4倍数的处理似乎有问题，文中非4背熟的s[i-1]没有使用s_box处理，这是错误的，应该处理)
+   完整正确的key-expansion:
+
+   ![img_1.png](img_1.png)
+   
+
 10. 数值区域设置
 
     https://stackoverflow.com/questions/40472668/numeric-textfield-for-integers-in-javafx-8-with-textformatter-and-or-unaryoperat
