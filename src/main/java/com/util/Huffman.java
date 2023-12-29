@@ -50,8 +50,7 @@ public class Huffman {
     }
 
     //编码方法，返回Object[]，大小为2,Object[0]为编码后的字符串，Object[1]为编码对应的码表
-    public void encode(File origFile) throws IOException {
-        File comprFile = new File(origFile.getAbsoluteFile()+".huffman");
+    public void encode(File origFile, File comprFile) throws IOException {
         FileInputStream is = new FileInputStream(origFile);
         long[] freqMap=new long[byteNum];
 
@@ -67,7 +66,7 @@ public class Huffman {
         compressFile(is, comprFile);
         is.close();
         // 将编码表写入新文件
-        File encodeFile = new File(origFile.getAbsoluteFile()+".encode");
+        File encodeFile = new File(comprFile.getAbsoluteFile()+".encode");
         fileExistEval(encodeFile, true);
         FileOutputStream os = new FileOutputStream(encodeFile);
         os.write(enByteArray(encodeMap));
@@ -188,16 +187,15 @@ public class Huffman {
     }
 
     //对字符串进行解码，解码时需要编码码表
-    public void decode(File comprFile) throws IOException, ClassNotFoundException {
+    public void decode(File comprFile, File deFile) throws IOException, ClassNotFoundException {
         // 缓冲处理字符串
-        File origFile = new File(comprFile.getAbsolutePath().replace(".huffman", ""));
-        fileExistEval(origFile, true);
-        FileOutputStream os = new FileOutputStream(origFile);
+        fileExistEval(deFile, true);
+        FileOutputStream os = new FileOutputStream(deFile);
         byte[] bufferIn = new byte[pageSize];
         byte[] bufferOut = new byte[pageSize];
 
         // 获取编码表
-        File encodeFile = new File(origFile.getAbsolutePath()+".encode");
+        File encodeFile = new File(comprFile.getAbsolutePath()+".encode");
         FileInputStream is = new FileInputStream(encodeFile);
         encodeMap = (String[]) deByteArray(is.readAllBytes());
 
@@ -229,7 +227,7 @@ public class Huffman {
                 if(!decodeFlag)
                     break;
                 // 将得到的数据写入输出文件
-                if(idxOutNew==readNum){
+                if(idxOutNew==pageSize || (is.available()==0 && bufferStr.isEmpty())){
                     os.write(bufferOut, 0, idxOutNew);
                     idxOutNew = 0;
                     recoverSize += pageSize;

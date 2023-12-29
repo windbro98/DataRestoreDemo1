@@ -2,17 +2,15 @@ package com.ui;
 
 import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
-import atlantafx.base.util.IntegerStringConverter;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.entity.SrcManager;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.DirectoryChooser;
-import javafx.util.converter.DateTimeStringConverter;
 import javafx.util.converter.LocalDateTimeStringConverter;
 import javafx.util.converter.LongStringConverter;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -23,11 +21,8 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
@@ -37,14 +32,14 @@ import static com.util.StyleUtil.*;
 import static com.util.StyleUtil.createPopup;
 
 // UI设计
-public class PageFactory {
+public class UIFactory {
 
     public static Material2MZ btnFileIcon = Material2MZ.PAGEVIEW;
     public static DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     // 构造方法私有化
-    private PageFactory(){
+    private UIFactory(){
     }
 
     // 备份页面初始化
@@ -52,9 +47,9 @@ public class PageFactory {
         VBox backupPage = new VBox();
 
         // “源地址”文本框
-        InputGroup srcGroup = createInputGroup("源地址", false); // 源目录
+        InputGroup srcGroup = createAddrGroup("源地址", false); // 源目录
         // “备份地址”文本框
-        InputGroup backupGroup = createInputGroup("备份地址", false); //备份文件路径
+        InputGroup backupGroup = createAddrGroup("备份地址", false); //备份文件路径
         // 文件类型选择
         InputGroup formatGroup = createTextFilterGroup("文件类型");
         // 文件名选择
@@ -68,18 +63,23 @@ public class PageFactory {
         // 文件与目录路径选择
         InputGroup fileGroup = createFileFilterGroup("排除文件路径", true);
         InputGroup dirGroup = createFileFilterGroup("排除目录路径", false);
+        // 压缩方式选择
+        InputGroup compressGroup = createChoiceBox("压缩方式", FXCollections.observableArrayList("无", "Huffman", "LZ77", "LZ77Pro"));
+        // 加密方式选择
+        InputGroup encryptGroup = createChoiceBox("加密方式", FXCollections.observableArrayList("无", "AES256"));
         // "提交"与"清空"按钮
         Button btnSubmit = new Button("提交");
         Button btnClear = new Button("清空");
         HBox hb = new HBox(btnSubmit, btnClear);
+        // 将所有组件添加到页面中
         backupPage.getChildren().addAll(srcGroup, backupGroup, formatGroup, nameGroup, sizeGroup, createTimeGroup,
-                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, hb);
-        //
+                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup, hb);
+        // 获取源目录和备份目录
         TextField tfSrc = (TextField) srcGroup.getChildren().get(1);
         TextField tfBackupSave = (TextField) backupGroup.getChildren().get(1);
-
+        // 当用户点击提交时，对各个manager进行赋值
         btnBackup(btnSubmit, btnClear, tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup,
-                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup,  rootSp);
+                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup, rootSp);
         return backupPage;
     };
 
@@ -88,8 +88,8 @@ public class PageFactory {
         VBox restorePage = new VBox();
 
         // 文本框
-        InputGroup backupGroup = createInputGroup("备份地址", true); // 备份文件路径
-        InputGroup resGroup = createInputGroup("恢复地址", false); // 恢复路径
+        InputGroup backupGroup = createAddrGroup("备份地址", true); // 备份文件路径
+        InputGroup resGroup = createAddrGroup("恢复地址", false); // 恢复路径
         // 按钮“提交”与“清空”
         Button btnSubmit = new Button("提交");
         Button btnClear = new Button("清空");
@@ -136,7 +136,7 @@ public class PageFactory {
     }
 
     // 文本框组合，使用的是textField
-    private static InputGroup createInputGroup(String prompt, boolean isFile){
+    private static InputGroup createAddrGroup(String prompt, boolean isFile){
         // 提示文本框
         TextField tfPrompt = new TextField(prompt);
         tfPrompt.setEditable(false);
@@ -162,10 +162,27 @@ public class PageFactory {
     }
 
     public static InputGroup createFileFilterGroup(String prompt, boolean isFile){
-        TextArea ta = new TextArea();
         CheckBox cb = new CheckBox(prompt);
+        TextArea ta = new TextArea();
         Button btn=createBtnFileChoose(ta, isFile);
         return new InputGroup(cb, ta, btn);
+    }
+
+    // 选择框初始化
+    public static InputGroup createChoiceBox(String prompt, ObservableList<String> choices){
+        ComboBox<String> cmb = new ComboBox<>();
+        CheckBox cb = new CheckBox(prompt);
+
+        cmb.setItems(choices);
+        cmb.getSelectionModel().selectFirst();
+
+        if(prompt.equals("加密方式")){
+            TextField tf = new TextField();
+            tf.setEditable(true);
+            return new InputGroup(cb, cmb, tf);
+        }
+        else
+            return new InputGroup(cb, cmb);
     }
 
     public static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
@@ -215,7 +232,8 @@ public class PageFactory {
     public static void btnBackup(Button btnSubmit, Button btnClear, TextField tfSrc, TextField tfBackupSave,
                                  InputGroup formatGroup, InputGroup nameGroup, InputGroup sizeGroup,
                                  InputGroup createTimeGroup, InputGroup modifiedTimeGroup, InputGroup accessTimeGroup,
-                                 InputGroup fileGroup, InputGroup dirGroup, StackPane rootSp){
+                                 InputGroup fileGroup, InputGroup dirGroup, InputGroup compressGroup,
+                                 InputGroup encryptGroup, StackPane rootSp){
         SrcManager srcM = SrcManager.getInstance();
         BackManager backM = BackManager.getInstance();
         // 清空
@@ -238,8 +256,9 @@ public class PageFactory {
                         // 源文件管理器和备份文件管理器初始化
                         initFilter(formatGroup, nameGroup, sizeGroup, createTimeGroup,
                                 modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup);
+                        initEncoder(compressGroup, encryptGroup);
                         srcM.initSrcManager(tfSrc.getText());
-                        backM.initBackManager(tfBackupSave.getText(), "", "");
+                        backM.initBackManager(tfBackupSave.getText());
                         // 备份文件提取
                         boolean backFlag = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
                         // 提示窗口
@@ -253,11 +272,14 @@ public class PageFactory {
                     } catch (InterruptedException e) {
                         // 错误：超时
                         throw new RuntimeException(e);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
         });
     }
+
 
     public static void backupClear(TextField tfSrc, TextField tfBackupSave, InputGroup formatGroup, InputGroup nameGroup,
                                    InputGroup sizeGroup, InputGroup createTimeGroup, InputGroup modifiedTimeGroup,
@@ -342,6 +364,27 @@ public class PageFactory {
                 }
             }
         });
+    }
+
+    public static void initEncoder(InputGroup compressGroup, InputGroup encryptGroup){
+        CheckBox cbCompress = (CheckBox) compressGroup.getChildren().get(0);
+        CheckBox cbEncrypt = (CheckBox) encryptGroup.getChildren().get(0);
+        BackManager backM = BackManager.getInstance();
+
+        if(cbCompress.isSelected())
+        {
+            ComboBox<String> cmb = (ComboBox<String>) compressGroup.getChildren().get(1);
+            String compressType = cmb.getTypeSelector();
+            backM.setCompressType(compressType);
+        }
+        if(cbEncrypt.isSelected()){
+            ComboBox<String> cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
+            TextField tf = (TextField) encryptGroup.getChildren().get(2);
+            String encryptType = cmb.getTypeSelector();
+            String password = tf.getText();
+            backM.setEncryptType(encryptType);
+            backM.setPassword(password);
+        }
     }
 
     public static void initFilter(InputGroup formatGroup, InputGroup nameGroup, InputGroup sizeGroup,

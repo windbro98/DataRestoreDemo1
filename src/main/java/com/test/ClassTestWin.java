@@ -47,7 +47,7 @@ public class ClassTestWin {
         srcM.setFilterDir("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\dirFilter\\filteredDir");
         // 三大管理器初始化
         srcM.initSrcManager(srcDir);
-        backM.initBackManager(backDir, compType, encryType);
+        backM.initBackManager(backDir);
         resM.initResManager(resDir, compType, encryType);
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getFilePathSet());

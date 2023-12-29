@@ -1,17 +1,12 @@
 package com;
 
-import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
-import com.entity.BackManager;
-import com.entity.ResManager;
-import com.entity.SrcManager;
-import com.ui.PageFactory;
+import com.ui.UIFactory;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -19,10 +14,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Optional;
 
-import static com.util.FileToolUtil.taIsEmpty;
-import static com.util.FileToolUtil.tfIsEmpty;
 import static com.util.StyleUtil.*;
 import static com.util.DataUtil.getIndexForArray;
 
@@ -56,7 +48,7 @@ public class Main extends Application {
         initLeftMenu(leftMenu, leftMenuInfo, rightPages, sp, menuBtns);
         // 页面的拓扑结构
         rootSp.getChildren().add(sp);
-        Scene scene = new Scene(rootSp, 900, 450);
+        Scene scene = new Scene(rootSp, 900, 600);
         stage.setScene(scene);
 
         stage.show();
@@ -109,11 +101,11 @@ public class Main extends Application {
                 case "备份":  // 文件备份界面
                     ArrayList<Integer> srcDirLenCum = new ArrayList<>();
                     // 页面初始化
-                    rightPages[i] = PageFactory.initBackupPage(rootSp);
+                    rightPages[i] = UIFactory.initBackupPage(rootSp);
                     break;
                 case "恢复": // 文件恢复界面
                     // 页面初始化
-                    rightPages[i] = PageFactory.initRestorePage(rootSp);
+                    rightPages[i] = UIFactory.initRestorePage(rootSp);
                     break;
             }
         }

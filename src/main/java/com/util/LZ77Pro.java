@@ -21,11 +21,9 @@ public class LZ77Pro {
         currentBuffer = ByteBuffer.allocate(buffSize);
     }
 
-    public void unCompress(String inFilePath) throws IOException {
-        File inFile = new File(inFilePath);
-        File outFile = new File(inFilePath.replace(".lz77", "_lz77_recover"));
-        BufferedInputStream is = new BufferedInputStream(new FileInputStream(inFile));
-        BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outFile));
+    public void unCompress(File origFile, File enFile) throws IOException {
+        BufferedInputStream is = new BufferedInputStream(new FileInputStream(origFile));
+        BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(enFile));
 
         while(is.available()>0){ // 仍未读尽
             int pairLen = is.read();
@@ -66,17 +64,15 @@ public class LZ77Pro {
     /**
      * Compress method
      *
-     * @param inFilePath the name of the file to compress. Automatically appends
+     * @param enFile the name of the file to compress. Automatically appends
      * a ".lz77" extension to inFilePath name when creating the output file
      * @exception IOException if an error occurs
      */
-    public void compress(String inFilePath) throws IOException {
+    public void compress(File enFile, File deFile) throws IOException {
         // set up input and output
 
-        File inFile = new File(inFilePath);
-        File outFile = new File(inFilePath+".lz77");
-        BufferedInputStream is = new BufferedInputStream(new FileInputStream(inFile));
-        BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(outFile));
+        BufferedInputStream is = new BufferedInputStream(new FileInputStream(enFile));
+        BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(deFile));
 
         int matchIndex = 0, nextInt, tmpIndex;
         byte[] pairCode = new byte[3];

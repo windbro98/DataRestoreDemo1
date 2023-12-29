@@ -29,7 +29,6 @@ public class SrcManager {
         return INSTANCE;
     }
     private String srcDir; // 源目录路径
-
     private List<String> filePathSet; // 源目录中所有文件的路径集合
     private ArrayList<FileFilter> fileFilters = new ArrayList<>();
     private FileFilter comFilter;
