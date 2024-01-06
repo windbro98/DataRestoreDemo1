@@ -1,5 +1,7 @@
 package com.util;
 
+import com.google.zxing.common.reedsolomon.ReedSolomonException;
+
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.*;
@@ -13,7 +15,7 @@ import static java.lang.Math.min;
 
 public class PageManagerUtil {
     private static Page tmpPage = new Page(); // 正在处理的页面
-    private static boolean pageStatus = true; // 判断文件是否损坏
+    private static boolean fileCheckStatus = true; // 判断文件是否损坏
 
     // 工具类，禁止创建对象
     private PageManagerUtil(){
@@ -127,7 +129,7 @@ public class PageManagerUtil {
         dataRestore - 恢复文件数据
      */
     // 获取恢复文件名
-    public static String getResFileName(FileInputStream is) throws IOException {
+    public static String getResFileName(FileInputStream is) throws IOException, ReedSolomonException {
         byte[] fileNameByte=null;
         byte[] tmpFileNameByte;
 
@@ -155,7 +157,7 @@ public class PageManagerUtil {
     }
 
     // 获取恢复文件元数据
-    public static String[] getResMeta(FileInputStream is) throws IOException, ClassNotFoundException {
+    public static String[] getResMeta(FileInputStream is) throws IOException, ClassNotFoundException, ReedSolomonException {
         byte[] metaByte=null;
         byte[] tmpMetaByte;
 
@@ -182,7 +184,7 @@ public class PageManagerUtil {
     }
 
     // 数据恢复
-    public static void dataRestore(FileInputStream is,  File resFile) throws IOException {
+    public static void dataRestore(FileInputStream is,  File resFile) throws IOException, ReedSolomonException {
         FileOutputStream os = new FileOutputStream(resFile);
         while(tmpPage.getTailPage()!=1){ // 非尾页面
             os.write(tmpPage.pageData, tmpPage.getNameLen()+tmpPage.getMetaLen(), tmpPage.getDataLen());
@@ -201,6 +203,7 @@ public class PageManagerUtil {
     // tmpData和大部分的tmpHead准备完成，写入page
     public static void writePage(OutputStream os) throws IOException {
         tmpPage.setCrcCode();;
+        tmpPage.setRSCode();
         // 计算循环冗余校验码
         os.write(tmpPage.getHead(), 0, Page.pageHeadLen);
         os.write(tmpPage.pageData, 0, Page.pageDataLen);
@@ -209,7 +212,7 @@ public class PageManagerUtil {
 
     // 构建tmpHead, tmpHead[3]的位置留给了crcCode，但是这是在最后生成的
     public static void buildHead(int fileType, int tailPage, int nameLen, int metaLen, int dataLen) throws IOException {
-        // 0位-是否是头页面；1位-是否是文件；2位-是否是尾页面
+        // 0位-是否是文件；1位-是否是尾页面
         byte headPrefix = (byte)(fileType + (tailPage<<1));
         tmpPage.headPrefix = headPrefix;
         tmpPage.nameLen = (byte)nameLen;
@@ -249,26 +252,28 @@ public class PageManagerUtil {
     }
 
     // 读取页面
-    public static void readPage(FileInputStream is) throws IOException {
+    public static void readPage(FileInputStream is) throws IOException, ReedSolomonException {
         byte[] tmpHead = new byte[Page.pageHeadLen];
         is.read(tmpHead);
         tmpPage.setHead(tmpHead);
         is.read(tmpPage.pageData);
 
-//        // 文件损坏测试
-//        if(Math.random()<0.1)
-//            tmpPage.pageData[78] = (byte)(1-tmpPage.pageData[78]);
+        // 文件损坏测试
+        if(Math.random()<0.1)
+            tmpPage.pageData[244] = (byte)(-tmpPage.pageData[244]);
 
-        // 确认循环校验码：
-        pageStatus = (pageStatus && Page.crc.judge(tmpPage.pageData, tmpPage.crcCode));
+        // 使用RS纠删码校验，随后使用循环校验码确认
+        tmpPage.revisePageData();
+        boolean pageCheckStatus = Page.crc.judge(tmpPage.pageData, tmpPage.crcCode);
+        fileCheckStatus = (fileCheckStatus && pageCheckStatus);
     }
 
     // 检查页面是否损坏
-    public static String pageCheck(String resFileName){
-        if(pageStatus)
+    public static String fileCheck(String resFileName){
+        if(fileCheckStatus)
             return "";
         else{
-            pageStatus = true;
+            fileCheckStatus = true;
             return resFileName;
         }
     }

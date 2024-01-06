@@ -2,13 +2,14 @@ package com.test;
 
 import com.entity.BackManager;
 import com.entity.ResManager;
+import com.google.zxing.common.reedsolomon.ReedSolomonException;
 import com.util.Huffman;
 
 import java.io.File;
 import java.io.IOException;
 
 public class HuffmanTest {
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, ReedSolomonException {
         Huffman hm = new Huffman();
 
         File backupFile = new File("BackupData/20231228_203501");

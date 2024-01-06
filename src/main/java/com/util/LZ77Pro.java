@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import static com.util.DataUtil.idxSubArray;
+import static com.util.FileToolUtil.fileExistEval;
 
 public class LZ77Pro {
     public static final int DEFAULT_BUFF_SIZE = 256;
@@ -70,7 +71,7 @@ public class LZ77Pro {
      */
     public void compress(File enFile, File deFile) throws IOException {
         // set up input and output
-
+        fileExistEval(deFile, true);
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(enFile));
         BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(deFile));
 

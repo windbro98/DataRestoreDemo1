@@ -5,6 +5,7 @@ import atlantafx.base.theme.Styles;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.entity.SrcManager;
+import com.google.zxing.common.reedsolomon.ReedSolomonException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -19,8 +20,15 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -239,7 +247,7 @@ public class UIFactory {
         // 清空
         btnClear.setOnMouseClicked(mouseEvent -> {
             backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup, modifiedTimeGroup,
-                    accessTimeGroup, fileGroup, dirGroup);
+                    accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup);
         });
 
         btnSubmit.setOnMouseClicked(mouseEvent -> { // 点击
@@ -268,11 +276,25 @@ public class UIFactory {
                             createPopup("文件备份失败！备份目录不存在！", rootSp); // 备份失败
                         // 清空文本框，准备下次备份
                         backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup, modifiedTimeGroup,
-                                accessTimeGroup, fileGroup, dirGroup);
+                                accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup);
                     } catch (InterruptedException e) {
                         // 错误：超时
                         throw new RuntimeException(e);
                     } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidAlgorithmParameterException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchPaddingException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalBlockSizeException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    } catch (BadPaddingException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeySpecException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeyException e) {
                         throw new RuntimeException(e);
                     }
                 }
@@ -283,10 +305,12 @@ public class UIFactory {
 
     public static void backupClear(TextField tfSrc, TextField tfBackupSave, InputGroup formatGroup, InputGroup nameGroup,
                                    InputGroup sizeGroup, InputGroup createTimeGroup, InputGroup modifiedTimeGroup,
-                                   InputGroup accessTimeGroup, InputGroup fileGroup, InputGroup dirGroup){
+                                   InputGroup accessTimeGroup, InputGroup fileGroup, InputGroup dirGroup,
+                                   InputGroup compressGroup, InputGroup encryptGroup){
         ArrayList<InputGroup> taArr = new ArrayList<>();
         ArrayList<InputGroup> timeArr = new ArrayList<>();
         CheckBox cb;
+        ComboBox<String> cmb;
 
         taArr.addAll(Arrays.asList(formatGroup, nameGroup, fileGroup, dirGroup));
         timeArr.addAll(Arrays.asList(createTimeGroup, modifiedTimeGroup, accessTimeGroup));
@@ -309,12 +333,24 @@ public class UIFactory {
             tfEnd.clear();
             if(cb.isSelected()) cb.setSelected(false);
         }
-        // long型InputGroup
+        // 文件大小InputGroup
         cb = (CheckBox) sizeGroup.getChildren().get(0);
         TextField tfMin = (TextField) sizeGroup.getChildren().get(1);
         TextField tfMax = (TextField) sizeGroup.getChildren().get(3);
         tfMin.clear();
         tfMax.clear();
+        if(cb.isSelected()) cb.setSelected(false);
+        // 压缩方式
+        cb = (CheckBox) compressGroup.getChildren().get(0);
+        cmb = (ComboBox<String>) compressGroup.getChildren().get(1);
+        cmb.getSelectionModel().selectFirst();
+        if(cb.isSelected()) cb.setSelected(false);
+        // 加密方式
+        cb = (CheckBox) encryptGroup.getChildren().get(0);
+        cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
+        TextField tf = (TextField) encryptGroup.getChildren().get(2);
+        tf.clear();
+        cmb.getSelectionModel().selectFirst();
         if(cb.isSelected()) cb.setSelected(false);
     }
 
@@ -360,6 +396,8 @@ public class UIFactory {
                         throw new RuntimeException(e);
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
+                    } catch (ReedSolomonException e) {
+                        throw new RuntimeException(e);
                     }
                 }
             }
@@ -374,13 +412,13 @@ public class UIFactory {
         if(cbCompress.isSelected())
         {
             ComboBox<String> cmb = (ComboBox<String>) compressGroup.getChildren().get(1);
-            String compressType = cmb.getTypeSelector();
+            String compressType = cmb.getSelectionModel().getSelectedItem();
             backM.setCompressType(compressType);
         }
         if(cbEncrypt.isSelected()){
             ComboBox<String> cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
             TextField tf = (TextField) encryptGroup.getChildren().get(2);
-            String encryptType = cmb.getTypeSelector();
+            String encryptType = cmb.getSelectionModel().getSelectedItem();
             String password = tf.getText();
             backM.setEncryptType(encryptType);
             backM.setPassword(password);

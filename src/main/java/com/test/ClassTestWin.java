@@ -3,13 +3,21 @@ package com.test;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.entity.SrcManager;
+import com.google.zxing.common.reedsolomon.ReedSolomonException;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -17,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class ClassTestWin {
-    public static void main(String[] args) throws IOException, ClassNotFoundException, ParseException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, ParseException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ReedSolomonException {
         String srcDir = "OriginalDataWin";
         String backDir = "BackupData";
         String resDir = "RestoreDataWin";
@@ -51,6 +59,10 @@ public class ClassTestWin {
         resM.initResManager(resDir, compType, encryType);
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getFilePathSet());
+        // 压缩方式和加密方式初始化
+        // todo: 将压缩和加密的方式应用在恢复文件上
+//        backM.setCompressType("Huffman");
+//        backM.setEncryptType("AES256");
         // 备份
         backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
         String backFilePath = backM.getBackFilePath();

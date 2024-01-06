@@ -3,6 +3,8 @@ package com.entity;
  * todo: decryption和decompression书写
  */
 
+import com.google.zxing.common.reedsolomon.ReedSolomonException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,7 +38,7 @@ public class ResManager {
     }
 
     // 备份文件恢复，返回错误的文件
-    public ArrayList<String> fileRestore(String backFilePath) throws IOException, ClassNotFoundException{
+    public ArrayList<String> fileRestore(String backFilePath) throws IOException, ClassNotFoundException, ReedSolomonException {
         // 备份文件提取
         File backFile = new File(backFilePath);
         FileInputStream is = new FileInputStream(backFile);
@@ -52,7 +54,7 @@ public class ResManager {
     }
 
     // 单个文件恢复
-    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException{
+    public static String fileRestoreSingle(FileInputStream is, String resRoot) throws IOException, ClassNotFoundException, ReedSolomonException {
         // 获取恢复文件名
         String resFileName = getResFileName(is);
         String resFilePath = fileConcat(resRoot, resFileName);
@@ -79,13 +81,6 @@ public class ResManager {
         }
 
         // 文件损坏检验，文件损坏则返回文件名
-        return pageCheck(resFileName);
-    }
-
-
-
-    // 文件解压缩
-    private static void fileDecompression(){
-
+        return fileCheck(resFileName);
     }
 }

@@ -5,8 +5,15 @@ import com.util.Huffman;
 import com.util.LZ77;
 import com.util.LZ77Pro;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.io.File;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
@@ -77,10 +84,10 @@ public class BackManager {
     }
 
     // 从源目录中提取并生成备份文件
-    public boolean fileExtract(List<String> filePathSet, String srcDir) throws IOException {
-        File backFile = new File(this.backDir);
+    public boolean fileExtract(List<String> filePathSet, String srcDir) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException {
+        File backDir = new File(this.backDir);
         // 备份目录存在性验证，否则直接返回
-        if(!dirExistEval(backFile))
+        if(!dirExistEval(backDir))
             return false;
 
         InputStream is = null;
@@ -90,6 +97,7 @@ public class BackManager {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
         Calendar calendar = Calendar.getInstance();
         this.backFilePath = fileConcat(this.backDir, df.format(calendar.getTime()));
+        File backFile = new File(this.backFilePath);
         // 临时备份文件，后续可能直接转正，也可能被删除
         String tmpFilePath = this.backFilePath+"_tmp";
         File tmpFile = new File(tmpFilePath);
@@ -110,42 +118,56 @@ public class BackManager {
                 else
                     dirPaged(os, inFilePath, inFile);
             }
+            os.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // 文件的压缩和加密
+        File compressFile = new File(this.backFilePath+"_compression");
+        File encryptFile = new File(this.backFilePath+"_encryption");
         // 备份文件压缩
         switch (this.compressType){
             case "Huffman": {
                 Huffman hm = new Huffman();
-                hm.encode(tmpFile, backFile);
-                tmpFile = backFile;
+                hm.encode(tmpFile, compressFile);
                 break;
             }
             case "LZ77": {
                 LZ77 lz = new LZ77();
-                lz.compress(tmpFile, backFile);
-                tmpFile = backFile;
+                lz.compress(tmpFile, compressFile);
                 break;
             }
             case "LZ77Pro": {
                 LZ77Pro lz = new LZ77Pro();
-                lz.compress(tmpFile, backFile);
-                tmpFile = backFile;
+                lz.compress(tmpFile, compressFile);
                 break;
             }
             default:
                 break;
 
+        }
+        // 压缩后处理，将目前的处理指针tmpFile切换到处理后的文件上，并删除之前的文件
+        if(!this.compressType.isEmpty()){
+            tmpFile.delete();
+            tmpFile = compressFile;
         }
         // 备份文件加密
         switch(this.encryptType){
             case "AES256": {
-
+                AES.encryptFile(password, tmpFile, encryptFile);
                 break;
             }
             default:
                 break;
         }
+        if(!this.encryptType.isEmpty()){
+            // todo: 这里没有成功删除
+            tmpFile.delete();
+            tmpFile = encryptFile;
+        }
+        // 将最终修改后的文件名称修改为backup文件名称，而不再携带编码等信息
+        tmpFile.renameTo(backFile);
 
         return true;
     }

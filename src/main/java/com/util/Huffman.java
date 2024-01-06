@@ -52,6 +52,7 @@ public class Huffman {
     //编码方法，返回Object[]，大小为2,Object[0]为编码后的字符串，Object[1]为编码对应的码表
     public void encode(File origFile, File comprFile) throws IOException {
         FileInputStream is = new FileInputStream(origFile);
+        fileExistEval(comprFile, true);
         long[] freqMap=new long[byteNum];
 
         // 构建频率表
@@ -66,13 +67,14 @@ public class Huffman {
         compressFile(is, comprFile);
         is.close();
         // 将编码表写入新文件
-        File encodeFile = new File(comprFile.getAbsoluteFile()+".encode");
+        File encodeFile = new File(origFile.getAbsoluteFile()+".encode");
         fileExistEval(encodeFile, true);
         FileOutputStream os = new FileOutputStream(encodeFile);
         os.write(enByteArray(encodeMap));
         // 计算压缩比
         double comprRadio = getCompressionRadio(freqMap);
         System.out.println("当前的压缩比为："+ comprRadio);
+        os.close();
     }
 
      private double getCompressionRadio(long[] freqMap){
@@ -106,6 +108,7 @@ public class Huffman {
         // 将最后一个字节（不满8bit）写入压缩文件
         if(!sb.isEmpty())
             os.write(binaryToByteArray(sb.toString()));
+        os.close();
     }
 
     /*
@@ -236,6 +239,7 @@ public class Huffman {
             }
         }
         is.close();
+        os.close();
         System.out.println("恢复的字节数为："+recoverSize);
     }
 }

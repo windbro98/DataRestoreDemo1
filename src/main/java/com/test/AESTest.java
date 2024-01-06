@@ -15,8 +15,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
-import static com.util.AES.generateIv;
-import static com.util.AES.generateKey;
+import static com.util.AES.*;
 
 public class AESTest {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
@@ -39,7 +38,18 @@ public class AESTest {
 
         String password = "hello";
 
-        byte[] ivKey = AES.encryptFile(password, inFile, enFile);
-        AES.decryptFile(ivKey, enFile, deFile);
+        byte[] ivByte = AES.encryptFile(password, inFile, enFile);
+
+        String typePassword = "hedlo";
+        byte[] keyByte = AES.generateKey(AES.keyLen, typePassword);
+        byte[] res = new byte[ivLen + AES.keyLen];
+        System.arraycopy(ivByte, 0, res, 0, ivLen);
+        System.arraycopy(keyByte, 0, res, ivLen, keyLen);
+        try{
+            AES.decryptFile(res, enFile, deFile);
+        } catch (Exception e){
+            System.out.println("Incorrect password");
+        }
+
     }
 }

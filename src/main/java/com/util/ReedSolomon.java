@@ -1,35 +1,12 @@
-package com.test;
+package com.util;
 
 import com.google.zxing.common.reedsolomon.GenericGF;
 import com.google.zxing.common.reedsolomon.ReedSolomonDecoder;
 import com.google.zxing.common.reedsolomon.ReedSolomonEncoder;
 import com.google.zxing.common.reedsolomon.ReedSolomonException;
 
-public class ReedSolomonTest {
-    public static void main(String[] args) throws ReedSolomonException {
-        // Example parameters
-
-        // Original data
-        byte[] originalData = "HelloWorld".getBytes();
-        int ecBytes = 2;
-        System.out.println("Original data: " + new String(originalData));
-
-        // Encode the data
-        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.DATA_MATRIX_FIELD_256);
-        byte[] dataWithECC = encodeData(originalData, ecBytes,  encoder);
-        System.out.println("Encoded data: " + new String(dataWithECC));
-
-        // Simulate errors (you can replace this with your error-handling logic)
-        simulateErrors(dataWithECC, 1);
-        System.out.println("Error data: "+new String(dataWithECC));
-
-        // Decode the data
-        ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
-        byte[] decodedData = decodeData(dataWithECC, ecBytes, decoder);
-        System.out.println("Decoded data: " + new String(decodedData));
-    }
-
-    private static byte[] encodeData(byte[] originalData, int ecBytes, ReedSolomonEncoder encoder) {
+public class ReedSolomon {
+    public static byte[] encodeData(byte[] originalData, int ecBytes, ReedSolomonEncoder encoder) {
         int dataLen = originalData.length;
         int[] dataAsInts = new int[dataLen+ecBytes];
 
@@ -38,7 +15,7 @@ public class ReedSolomonTest {
         return convertIntsToBytes(dataAsInts);
     }
 
-    private static byte[] decodeData(byte[] dataWithECC, int ecBytes, ReedSolomonDecoder decoder) throws ReedSolomonException {
+    public static byte[] decodeData(byte[] dataWithECC, int ecBytes, ReedSolomonDecoder decoder) throws ReedSolomonException {
         int[] dataAsInts = convertBytesToInts(dataWithECC);
         decoder.decode(dataAsInts, ecBytes);
         return convertIntsToBytes(dataAsInts);
@@ -66,5 +43,28 @@ public class ReedSolomonTest {
             int index = (int) (Math.random() * data.length);
             data[index] ^= 0x01; // Flip the bit
         }
+    }
+
+    public static void main(String[] args) throws ReedSolomonException {
+        // Example parameters
+
+        // Original data
+        byte[] originalData = "HelloWorld".getBytes();
+        int ecBytes = 2;
+        System.out.println("Original data: " + new String(originalData));
+
+        // Encode the data
+        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.DATA_MATRIX_FIELD_256);
+        byte[] dataWithECC = encodeData(originalData, ecBytes,  encoder);
+        System.out.println("Encoded data: " + new String(dataWithECC));
+
+        // Simulate errors (you can replace this with your error-handling logic)
+        simulateErrors(dataWithECC, 1);
+        System.out.println("Error data: "+new String(dataWithECC));
+
+        // Decode the data
+        ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
+        byte[] decodedData = decodeData(dataWithECC, ecBytes, decoder);
+        System.out.println("Decoded data: " + new String(decodedData));
     }
 }
