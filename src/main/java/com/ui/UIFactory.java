@@ -8,6 +8,7 @@ import com.entity.SrcManager;
 import com.google.zxing.common.reedsolomon.ReedSolomonException;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -38,6 +39,7 @@ import java.util.Optional;
 import static com.util.FileToolUtil.tfIsEmpty;
 import static com.util.StyleUtil.*;
 import static com.util.StyleUtil.createPopup;
+import static com.util.UIConstants.*;
 
 // UI设计
 public class UIFactory {
@@ -54,10 +56,14 @@ public class UIFactory {
     public static VBox initBackupPage(StackPane rootSp){
         VBox backupPage = new VBox();
 
+        // 地址设置文本框
+        VBox textAddr = createText("地址设置");
         // “源地址”文本框
         InputGroup srcGroup = createAddrGroup("源地址", false); // 源目录
         // “备份地址”文本框
         InputGroup backupGroup = createAddrGroup("备份地址", false); //备份文件路径
+        // 筛选文本框
+        VBox textFilter = createText("文件筛选");
         // 文件类型选择
         InputGroup formatGroup = createTextFilterGroup("文件类型");
         // 文件名选择
@@ -71,17 +77,20 @@ public class UIFactory {
         // 文件与目录路径选择
         InputGroup fileGroup = createFileFilterGroup("排除文件路径", true);
         InputGroup dirGroup = createFileFilterGroup("排除目录路径", false);
+        // 压缩与加密文本框
+        VBox textPro = createText("压缩与加密");
         // 压缩方式选择
-        InputGroup compressGroup = createChoiceBox("压缩方式", FXCollections.observableArrayList("无", "Huffman", "LZ77", "LZ77Pro"));
+        InputGroup compressGroup = createChoiceGroup("压缩方式", FXCollections.observableArrayList("无", "Huffman", "LZ77", "LZ77Pro"));
         // 加密方式选择
-        InputGroup encryptGroup = createChoiceBox("加密方式", FXCollections.observableArrayList("无", "AES256"));
+        InputGroup encryptGroup = createChoiceGroup("加密方式", FXCollections.observableArrayList("无", "AES256"));
         // "提交"与"清空"按钮
         Button btnSubmit = new Button("提交");
         Button btnClear = new Button("清空");
-        HBox hb = new HBox(btnSubmit, btnClear);
+        HBox hb = createButtonLayout(btnSubmit, btnClear);
         // 将所有组件添加到页面中
-        backupPage.getChildren().addAll(srcGroup, backupGroup, formatGroup, nameGroup, sizeGroup, createTimeGroup,
-                modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup, hb);
+        backupPage.getChildren().addAll(textAddr, srcGroup, backupGroup, textFilter, formatGroup, nameGroup, sizeGroup,
+                createTimeGroup, modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, textPro, compressGroup,
+                encryptGroup, hb);
         // 获取源目录和备份目录
         TextField tfSrc = (TextField) srcGroup.getChildren().get(1);
         TextField tfBackupSave = (TextField) backupGroup.getChildren().get(1);
@@ -96,61 +105,64 @@ public class UIFactory {
         VBox restorePage = new VBox();
 
         // 文本框
+        VBox textAddr = createText("地址设置");
         InputGroup backupGroup = createAddrGroup("备份地址", true); // 备份文件路径
         InputGroup resGroup = createAddrGroup("恢复地址", false); // 恢复路径
         // 按钮“提交”与“清空”
         Button btnSubmit = new Button("提交");
         Button btnClear = new Button("清空");
-        HBox hb = new HBox(btnSubmit, btnClear);
-        restorePage.getChildren().addAll(backupGroup, resGroup, hb);
+        HBox hb = createButtonLayout(btnSubmit, btnClear);
+        restorePage.getChildren().addAll(textAddr, backupGroup, resGroup, hb);
 
-        btnRestore(btnSubmit, btnClear, (TextField) (backupGroup.getChildren().get(1)), (TextField) resGroup.getChildren().get(1), rootSp);
+        btnRestore(btnSubmit, btnClear, (TextField) (backupGroup.getChildren().get(1)),
+                (TextField) resGroup.getChildren().get(1), rootSp);
         return restorePage;
     }
 
     // 时间输入框
     private static InputGroup createTimeFilterGroup(String prompt){
         InputGroup res = new InputGroup();
-        CheckBox cb = new CheckBox(prompt);
-        TextField timeStart = new TextField();
-        TextField timeEnd = new TextField();
-        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"});
+        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
+        TextField timeStartPrompt = createCustomField("起始", INNER_PROMPT_WIDTH_RADIO, false);
+        TextField timeEndPrompt = createCustomField("终止", INNER_PROMPT_WIDTH_RADIO, false);
+        TextField timeStart = createCustomField("", TIME_WIDTH_RADIO, true);
+        TextField timeEnd = createCustomField("", TIME_WIDTH_RADIO, true);
+        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
 
         cob.setValue("排除");
-        res.getChildren().add(cb);
         timeStart.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
         timeEnd.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
-        res.getChildren().addAll(timeStart, timeEnd, cob);
+        res.getChildren().addAll(cb, timeStartPrompt, timeStart, timeEndPrompt, timeEnd, cob);
 
         return res;
     }
 
     // 大小输入框
     private static InputGroup createSizeFilterGroup(){
-        CheckBox cb = new CheckBox("文件大小");
-        TextField sizeMin = new TextField();
-        TextField sizeMax = new TextField();
-        TextField sizeUnit1 = new TextField("KB");
-        TextField sizeUnit2 = new TextField("KB");
+        CheckBox cb = createCheckBox("文件大小", PROMPT_WIDTH_RADIO);
+        TextField sizeMinPrompt = createCustomField("最小", INNER_PROMPT_WIDTH_RADIO, false);
+        TextField sizeMaxPrompt = createCustomField("最大", INNER_PROMPT_WIDTH_RADIO, false);
+        TextField sizeMin = createCustomField("", SIZE_WIDTH_RADIO, true);
+        TextField sizeMax = createCustomField("", SIZE_WIDTH_RADIO, true);
+        TextField sizeUnit1 = createCustomField("KB", INNER_UNIT_WIDTH_RADIO, false);
+        TextField sizeUnit2 = createCustomField("KB", INNER_UNIT_WIDTH_RADIO, false);
 
         sizeUnit1.setEditable(false);
         sizeUnit2.setEditable(false);
         sizeMin.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
         sizeMax.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
-        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"});
+        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
         cob.setValue("排除");
 
-        return new InputGroup(cb, sizeMin, sizeUnit1, sizeMax, sizeUnit2, cob);
+        return new InputGroup(cb, sizeMinPrompt, sizeMin, sizeUnit1, sizeMaxPrompt, sizeMax, sizeUnit2, cob);
     }
 
     // 文本框组合，使用的是textField
     private static InputGroup createAddrGroup(String prompt, boolean isFile){
         // 提示文本框
-        TextField tfPrompt = new TextField(prompt);
-        tfPrompt.setEditable(false);
+        TextField tfPrompt = createCustomField(prompt, PROMPT_WIDTH_RADIO, false);
         // 内容显示文本框
-        TextField tf = new TextField();
-        tf.setEditable(false);
+        TextField tf = createCustomField("", CONTENT_WIDTH_RADIO, false);
         // 文件选择按钮
         Button btn = createBtnFileChoose(tf, isFile);
 
@@ -160,35 +172,27 @@ public class UIFactory {
     // 文本框组合，使用的是
     // fileType: 0-目录；1-文件；2-目录+文件
     public static InputGroup createTextFilterGroup(String prompt){
-        TextArea ta = new TextArea();
-        CheckBox cb = new CheckBox(prompt);
+        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
+        TextArea ta = createCustomArea("", CONTENT_WIDTH_RADIO, true);
 
-        ChoiceBox cob = createChoiceBox(new String[]{"包含", "排除"});
+        ChoiceBox cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
         cob.setValue("排除");
 
         return new InputGroup(cb, ta, cob);
     }
 
     public static InputGroup createFileFilterGroup(String prompt, boolean isFile){
-        CheckBox cb = new CheckBox(prompt);
-        TextArea ta = new TextArea();
+        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
+        TextArea ta = createCustomArea("", CONTENT_WIDTH_RADIO, true);
         Button btn=createBtnFileChoose(ta, isFile);
         return new InputGroup(cb, ta, btn);
     }
 
-    // 选择框初始化
-    public static InputGroup createChoiceBox(String prompt, ObservableList<String> choices){
-        ComboBox<String> cmb = new ComboBox<>();
-        CheckBox cb = new CheckBox(prompt);
 
-        cmb.setItems(choices);
-        cmb.getSelectionModel().selectFirst();
-
-        return new InputGroup(cb, cmb);
-    }
 
     public static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
         Button btn = new Button("", new FontIcon(btnFileIcon));
+        btn.setPrefWidth(WIDTH*BUTTON_WIDTH_RADIO);
         btn.getStyleClass().addAll(Styles.BUTTON_ICON);
         Stage stage = new Stage();
 
@@ -224,11 +228,6 @@ public class UIFactory {
         return btn;
     }
 
-    public static ChoiceBox<String> createChoiceBox(String[] strList){
-        ChoiceBox<String> cob = new ChoiceBox<>();
-        cob.getItems().addAll(strList);
-        return cob;
-    }
 
     // 备份页面的提交按钮
     public static void btnBackup(Button btnSubmit, Button btnClear, TextField tfSrc, TextField tfBackupSave,
@@ -321,16 +320,16 @@ public class UIFactory {
         // time型InputGroup
         for(InputGroup ig:timeArr){
             cb = (CheckBox) ig.getChildren().get(0);
-            TextField tfStart = (TextField) ig.getChildren().get(1);
-            TextField tfEnd = (TextField) ig.getChildren().get(2);
+            TextField tfStart = (TextField) ig.getChildren().get(2);
+            TextField tfEnd = (TextField) ig.getChildren().get(4);
             tfStart.clear();
             tfEnd.clear();
             if(cb.isSelected()) cb.setSelected(false);
         }
         // 文件大小InputGroup
         cb = (CheckBox) sizeGroup.getChildren().get(0);
-        TextField tfMin = (TextField) sizeGroup.getChildren().get(1);
-        TextField tfMax = (TextField) sizeGroup.getChildren().get(3);
+        TextField tfMin = (TextField) sizeGroup.getChildren().get(2);
+        TextField tfMax = (TextField) sizeGroup.getChildren().get(5);
         tfMin.clear();
         tfMax.clear();
         if(cb.isSelected()) cb.setSelected(false);
@@ -497,31 +496,31 @@ public class UIFactory {
             srcM.setFilterName(ta.getText(), (String) cob.getValue());
         }
         if(cbSize.isSelected()){
-            tfStart = (TextField) sizeGroup.getChildren().get(1);
-            tfEnd = (TextField) sizeGroup.getChildren().get(3);
-            cob = (ChoiceBox) sizeGroup.getChildren().get(5);
+            tfStart = (TextField) sizeGroup.getChildren().get(2);
+            tfEnd = (TextField) sizeGroup.getChildren().get(5);
+            cob = (ChoiceBox) sizeGroup.getChildren().get(7);
             srcM.setFilterSize(Long.parseLong(tfStart.getText()), Long.parseLong(tfEnd.getText()), (String) cob.getValue());
         }
         if(cbCreateTime.isSelected()){
-            tfStart = (TextField) createTimeGroup.getChildren().get(1);
-            tfEnd = (TextField) createTimeGroup.getChildren().get(2);
-            cob = (ChoiceBox) createTimeGroup.getChildren().get(3);
+            tfStart = (TextField) createTimeGroup.getChildren().get(2);
+            tfEnd = (TextField) createTimeGroup.getChildren().get(4);
+            cob = (ChoiceBox) createTimeGroup.getChildren().get(5);
             srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "create", (String) cob.getValue());
+                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "create", (String) cob.getValue());
         }
         if(cbModifiedTime.isSelected()){
-            tfStart = (TextField) modifiedTimeGroup.getChildren().get(1);
-            tfEnd = (TextField) modifiedTimeGroup.getChildren().get(2);
-            cob = (ChoiceBox) modifiedTimeGroup.getChildren().get(3);
+            tfStart = (TextField) modifiedTimeGroup.getChildren().get(2);
+            tfEnd = (TextField) modifiedTimeGroup.getChildren().get(4);
+            cob = (ChoiceBox) modifiedTimeGroup.getChildren().get(5);
             srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "modified", (String) cob.getValue());
+                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "modified", (String) cob.getValue());
         }
         if(cbAccessTime.isSelected()){
-            tfStart = (TextField) accessTimeGroup.getChildren().get(1);
-            tfEnd = (TextField) accessTimeGroup.getChildren().get(2);
-            cob = (ChoiceBox) accessTimeGroup.getChildren().get(3);
+            tfStart = (TextField) accessTimeGroup.getChildren().get(2);
+            tfEnd = (TextField) accessTimeGroup.getChildren().get(4);
+            cob = (ChoiceBox) accessTimeGroup.getChildren().get(5);
             srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfStart.getText())), "access", (String) cob.getValue());
+                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "access", (String) cob.getValue());
         }
 
         if(cbFile.isSelected()){

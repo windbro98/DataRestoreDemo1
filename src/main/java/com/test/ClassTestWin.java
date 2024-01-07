@@ -29,8 +29,6 @@ public class ClassTestWin {
         String srcDir = "OriginalDataWin";
         String backDir = "BackupData";
         String resDir = "RestoreDataWin";
-        String compType = "";
-        String encryType = "";
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime timeStart = LocalDateTime.from(timeFormat.parse("1998-10-10 10:00:00"));
         LocalDateTime timeEnd = LocalDateTime.from(timeFormat.parse("1998-10-10 10:02:00"));

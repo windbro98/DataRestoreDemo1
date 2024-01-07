@@ -1,37 +1,47 @@
 package com.util;
 
 import atlantafx.base.controls.Notification;
+import atlantafx.base.layout.InputGroup;
 import atlantafx.base.theme.Styles;
 import atlantafx.base.util.Animations;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.material2.Material2MZ;
 import org.kordamp.ikonli.material2.Material2OutlinedAL;
 
+import java.net.URL;
+
+import static com.util.FileToolUtil.fileConcat;
+import static com.util.UIConstants.*;
+
 public class StyleUtil {
     // 正常状态
     public static void setNormalMenu(Button btn){
-        btn.setFont(Font.font(null, FontWeight.NORMAL, -1));
+        btn.setFont(Font.font(null, FontWeight.NORMAL, MENU_FONT_SIZE));
         btn.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
     }
 
     // hover状态
     public static void setHoverMenu(Button btn){
-        btn.setFont(Font.font(null, FontWeight.BOLD, -1));
-        btn.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
+        btn.setFont(Font.font(null, FontWeight.BOLD, MENU_FONT_SIZE));
+        btn.setBackground(new Background(new BackgroundFill(HOVER_COLOR, null, null)));
     }
 
     // 点击后状态
     public static void setClickedMenu(Button btn){
-        btn.setFont(Font.font(null, FontWeight.NORMAL, -1));
-        btn.setBackground(new Background(new BackgroundFill(Color.BLUE, null, null)));
+        btn.setFont(Font.font(null, FontWeight.NORMAL, MENU_FONT_SIZE));
+        btn.setBackground(new Background(new BackgroundFill(HOVER_COLOR, null, null)));
     }
 
     // 信息确认
@@ -91,5 +101,72 @@ public class StyleUtil {
         dialog.initOwner(sp.getScene().getWindow());
         dialog.showAndWait();
         return pf.getText();
+    }
+    public static TextField createCustomField(String content, double radio, boolean editable){
+        TextField tf = new TextField();
+        tf.setText(content);
+        tf.setEditable(editable);
+        tf.setPrefWidth(WIDTH*radio);
+        return tf;
+    }
+    public static TextArea createCustomArea(String content, double radio, boolean editable){
+        TextArea ta = new TextArea();
+        ta.setText(content);
+        ta.setEditable(editable);
+        ta.setPrefWidth(WIDTH*radio);
+        return ta;
+    }
+
+    public static ChoiceBox<String> createChoiceBox(String[] strList, double radio){
+        ChoiceBox<String> cob = new ChoiceBox<>();
+        cob.setPrefWidth(WIDTH*radio);
+        cob.getItems().addAll(strList);
+        return cob;
+    }
+
+    // 选择框初始化
+    public static InputGroup createChoiceGroup(String prompt, ObservableList<String> choices){
+        ComboBox<String> cmb = new ComboBox<>();
+        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
+
+        cmb.setItems(choices);
+        cmb.getSelectionModel().selectFirst();
+
+        return new InputGroup(cb, cmb);
+    }
+    // 勾选框初始化
+    public static CheckBox createCheckBox(String prompt, double radio){
+        CheckBox cb = new CheckBox(prompt);
+
+        cb.setPrefWidth(WIDTH*radio);
+        cb.setSelected(false);
+
+        return cb;
+    }
+    public static HBox createButtonLayout(Button btn1, Button btn2){
+        HBox hb = new HBox();
+        hb.getChildren().addAll(btn1, btn2);
+
+        int btnCount = 2;
+        btn1.prefWidthProperty().bind(hb.widthProperty().divide(btnCount));
+        btn2.prefWidthProperty().bind(hb.widthProperty().divide(btnCount));
+        hb.setPadding(new Insets(HEIGHT*PADDING_RADIO, WIDTH*PADDING_RADIO, HEIGHT*PADDING_RADIO, WIDTH*PADDING_RADIO));
+        hb.setSpacing(WIDTH*SPACE_RADIO);
+        return hb;
+    }
+    public static VBox createText(String words){
+        VBox vb = new VBox();
+        Text text = new Text(words);
+        text.setFont(Font.font("", FontWeight.BOLD, CONTENT_FONT_SIZE));
+        vb.setPadding(new Insets(HEIGHT*PADDING_RADIO*0.5, 0, 0, 0));
+        vb.getChildren().add(text);
+        return vb;
+    }
+    public static ImageView createImageView(URL imageUrl, double radio){
+        Image image = new Image(imageUrl.getPath().substring(1));
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(radio*WIDTH);
+        imageView.setPreserveRatio(true);
+        return imageView;
     }
 }

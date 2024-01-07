@@ -3,20 +3,26 @@ package com;
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
 import com.ui.UIFactory;
+import com.util.UIConstants;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import static com.util.StyleUtil.*;
 import static com.util.DataUtil.getIndexForArray;
+import static com.util.UIConstants.*;
 
 // 主程序，也是GUI设计界面
 public class Main extends Application {
@@ -43,12 +49,12 @@ public class Main extends Application {
                 leftMenu,
                 rightPages[0]
         );
-        sp.setDividerPositions(0.3);
+        sp.setDividerPositions(MENU_WIDTH_RADIO);
         // 左边框初始化
         initLeftMenu(leftMenu, leftMenuInfo, rightPages, sp, menuBtns);
         // 页面的拓扑结构
         rootSp.getChildren().add(sp);
-        Scene scene = new Scene(rootSp, 900, 600);
+        Scene scene = new Scene(rootSp, WIDTH, HEIGHT);
         stage.setScene(scene);
 
         stage.show();
@@ -61,10 +67,16 @@ public class Main extends Application {
             Node page = rightPages[i];
             // 每个功能对应的按钮
             String info = leftMenuInfo[i];
-            Button btn = new Button(info);
+            // 创建图片
+            String imagePath = String.format("/com/ui/datarestoredemo1/icons/left%d.png", i);
+            URL imageUrl = this.getClass().getResource(imagePath);
+            ImageView imageView = createImageView(imageUrl, IMAGE_WIDTH_RADIO);
+            Button btn = new Button(info, imageView);
+            btn.setContentDisplay(ContentDisplay.TOP);
             setNormalMenu(btn);
             // 按钮风格
             btn.getStyleClass().add(Styles.FLAT);
+            btn.setPrefWidth(MENU_WIDTH_RADIO*WIDTH);
             // 按钮的触发效果
             btn.setOnMouseClicked(mouseEvent -> {   // 点击
                 tmpMenuId = currentMenuId;
