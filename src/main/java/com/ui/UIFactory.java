@@ -184,13 +184,7 @@ public class UIFactory {
         cmb.setItems(choices);
         cmb.getSelectionModel().selectFirst();
 
-        if(prompt.equals("加密方式")){
-            TextField tf = new TextField();
-            tf.setEditable(true);
-            return new InputGroup(cb, cmb, tf);
-        }
-        else
-            return new InputGroup(cb, cmb);
+        return new InputGroup(cb, cmb);
     }
 
     public static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
@@ -264,7 +258,7 @@ public class UIFactory {
                         // 源文件管理器和备份文件管理器初始化
                         initFilter(formatGroup, nameGroup, sizeGroup, createTimeGroup,
                                 modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup);
-                        initEncoder(compressGroup, encryptGroup);
+                        initEncoder(compressGroup, encryptGroup, rootSp);
                         srcM.initSrcManager(tfSrc.getText());
                         backM.initBackManager(tfBackupSave.getText());
                         // 备份文件提取
@@ -348,8 +342,6 @@ public class UIFactory {
         // 加密方式
         cb = (CheckBox) encryptGroup.getChildren().get(0);
         cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
-        TextField tf = (TextField) encryptGroup.getChildren().get(2);
-        tf.clear();
         cmb.getSelectionModel().selectFirst();
         if(cb.isSelected()) cb.setSelected(false);
     }
@@ -373,8 +365,39 @@ public class UIFactory {
                 Alert confirmMsg = createConfirmAlert("是否确认信息");
                 Optional<ButtonType> res = confirmMsg.showAndWait();
                 if(res.get().getText().equals("Yes")){
+                    String backFilePath = tfBackupRes.getText();
+                    File backFile = new File(backFilePath);
+                    File headFile = new File(backFilePath+"_head");
+                    // 备份文件存在性检验
+                    if(!backFile.exists()){ // 检验输入的备份文件是否存在
+                        try {
+                            createPopup("恢复失败！备份文件不存在！", rootSp);
+                            return;
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    else if(!headFile.exists()){ // 检验输入的备份文件是否存在对应的head文件
+                        try {
+                            createPopup("恢复失败！备份文件缺乏对应head文件！", rootSp);
+                            return;
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                     // 恢复文件管理器初始化
                     resM.initResManager(tfRes.getText());
+                    try {
+                        resM.initHead(backFilePath);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    // 判断备份文件是否加密，是则提示用户输入密码
+                    if(resM.encryptType != 0){
+                        String prompt = "该备份文件是加密文件，请输入密码：";
+                        String password = createPasswordDialog(prompt, rootSp);
+                        resM.setPassword(password);
+                    }
                     try {
                         // 恢复备份文件
                         ArrayList<String> errorFileList = resM.fileRestore(tfBackupRes.getText());
@@ -407,7 +430,13 @@ public class UIFactory {
                     } catch (NoSuchAlgorithmException e) {
                         throw new RuntimeException(e);
                     } catch (BadPaddingException e) {
-                        throw new RuntimeException(e);
+                        try {
+                            createPopup("备份文件密码错误！", rootSp);
+                            tfBackupRes.clear();
+                            tfRes.clear();
+                        } catch (InterruptedException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     } catch (InvalidKeySpecException e) {
                         throw new RuntimeException(e);
                     } catch (InvalidKeyException e) {
@@ -418,7 +447,7 @@ public class UIFactory {
         });
     }
 
-    public static void initEncoder(InputGroup compressGroup, InputGroup encryptGroup){
+    public static void initEncoder(InputGroup compressGroup, InputGroup encryptGroup, StackPane sp){
         CheckBox cbCompress = (CheckBox) compressGroup.getChildren().get(0);
         CheckBox cbEncrypt = (CheckBox) encryptGroup.getChildren().get(0);
         BackManager backM = BackManager.getInstance();
@@ -431,11 +460,13 @@ public class UIFactory {
         }
         if(cbEncrypt.isSelected()){
             ComboBox<String> cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
-            TextField tf = (TextField) encryptGroup.getChildren().get(2);
             String encryptType = cmb.getSelectionModel().getSelectedItem();
-            String password = tf.getText();
+            if(!encryptType.equals("无")){
+                String prompt = "您选择了文件加密，请输入您的密码（密码长度不大于32位）:";
+                String password = createPasswordDialog(prompt, sp);
+                backM.setPassword(password);
+            }
             backM.setEncryptType(encryptType);
-            backM.setPassword(password);
         }
     }
 

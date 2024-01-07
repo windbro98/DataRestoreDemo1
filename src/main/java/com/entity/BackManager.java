@@ -164,7 +164,7 @@ public class BackManager {
         // 备份文件加密
         switch(this.encryptType){
             case "AES256": {
-                byte[] ivByte = AES.encryptFile(password, tmpFile, encryptFile);
+                byte[] ivByte = AES.encryptFile(this.password, tmpFile, encryptFile);
                 // head数据
                 headMeta[2] = 1;
                 headMeta[3] = AES.ivLen;

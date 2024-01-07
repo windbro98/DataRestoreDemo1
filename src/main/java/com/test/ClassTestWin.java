@@ -60,7 +60,6 @@ public class ClassTestWin {
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getFilePathSet());
         // 压缩方式和加密方式初始化
-        // todo: 将压缩和加密的方式应用在恢复文件上
         backM.setCompressType("Huffman");
         backM.setEncryptType("AES256");
         backM.setPassword("hello");

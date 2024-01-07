@@ -41,8 +41,8 @@ public class ResManager {
     }
     private String resDir; // 恢复文件目录
     private String password;
-    int compressType;
-    int encryptType;
+    public int compressType;
+    public int encryptType;
     int[] headMeta;
     byte[] headData;
 

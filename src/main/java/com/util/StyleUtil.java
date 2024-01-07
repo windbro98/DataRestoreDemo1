@@ -79,4 +79,17 @@ public class StyleUtil {
         out.setOnFinished(f -> rootSp.getChildren().remove(msg));
         out.playFromStart();
     }
+
+    public static String createPasswordDialog(String prompt, StackPane sp){
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("密码输入窗口");
+        dialog.setHeaderText(prompt);
+        dialog.setContentText("请输入密码：");
+        PasswordField pf = new PasswordField();
+        dialog.getEditor().setText(pf.getText());
+        dialog.getDialogPane().setContent(pf);
+        dialog.initOwner(sp.getScene().getWindow());
+        dialog.showAndWait();
+        return pf.getText();
+    }
 }
