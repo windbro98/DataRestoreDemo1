@@ -157,6 +157,14 @@ public class FileToolUtil {
         return dir + File.separator + file;
     }
 
+    public static void writeFile(String filePath, byte[] fileData) throws IOException {
+        File file = new File(filePath);
+        fileExistEval(file, true);
+        FileOutputStream os = new FileOutputStream(file);
+        os.write(fileData);
+        os.close();
+    }
+
     // 判断文本框是否为空
     public static boolean tfIsEmpty(TextField tf){return tf.getText().isEmpty();}
     public static boolean taIsEmpty(TextArea ta){return ta.getText().isEmpty();}

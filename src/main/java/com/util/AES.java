@@ -15,7 +15,8 @@ import static com.util.FileToolUtil.fileExistEval;
 public class AES {
     public static int keyLen=32; // 按byte计数
     public static int ivLen=16;
-    public static byte[] salt = new byte[16];
+    public static int saltLen=16;
+    public static byte[] salt = new byte[saltLen];
 
     public AES(int customKeyLen){
         keyLen = customKeyLen;

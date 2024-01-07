@@ -4,6 +4,8 @@ package com.util;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -113,5 +115,28 @@ public class DataUtil {
                 return i;
         }
         return -1;
+    }
+    // byte数组拼接
+    public static byte[] byteArrayConcat(byte[] arr1, byte[] arr2){
+        int arrLen1 = arr1.length;
+        int arrLen2 = arr2.length;
+        byte[] arr = new byte[arrLen1+arrLen2];
+
+        System.arraycopy(arr1, 0, arr, 0, arrLen1);
+        System.arraycopy(arr2, 0, arr, arrLen1, arrLen2);
+        return arr;
+    }
+
+    public static byte[] intArray2byteArray(int[] intArr){
+        ByteBuffer byteBuffer = ByteBuffer.allocate(intArr.length*4);
+        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+        intBuffer.put(intArr);
+        return byteBuffer.array();
+    }
+    public static int[] byteArray2intArray(byte[] byteArr){
+        IntBuffer intBuffer = ByteBuffer.wrap(byteArr).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
+        int[] intArr = new int[intBuffer.remaining()];
+        intBuffer.get(intArr);
+        return intArr;
     }
 }

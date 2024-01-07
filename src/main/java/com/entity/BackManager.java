@@ -15,9 +15,11 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static com.util.DataUtil.*;
 import static com.util.FileToolUtil.*;
 import static com.util.PageManagerUtil.*;
 
@@ -39,6 +41,7 @@ public class BackManager {
     private String encryptType=""; // 编码方式
     private String backFilePath=""; // 备份文件路径
     private String password = "";
+    int headMetaLen = 5;
 
     public String getPassword() {
         return password;
@@ -51,16 +54,9 @@ public class BackManager {
     public String getBackFilePath() {
         return backFilePath;
     }
-    public String getCompressType() {
-        return compressType;
-    }
 
     public void setCompressType(String compressType) {
         this.compressType = compressType;
-    }
-
-    public String getEncryptType() {
-        return encryptType;
     }
 
     public void setEncryptType(String encryptType) {
@@ -68,7 +64,6 @@ public class BackManager {
     }
 
 
-    // todo: 设置压缩和加密的默认值
     // 备份文件管理器初始化
     public void initBackManager(String backDir) {
         this.backDir = backDir;
@@ -123,6 +118,9 @@ public class BackManager {
             throw new RuntimeException(e);
         }
 
+        // headMeta中包含5个信息：压缩方式，压缩对应的辅助数据长度，加密方式，iv长度，salt长度
+        int[] headMeta = new int[headMetaLen];
+        byte[] headData = new byte[0];
         // 文件的压缩和加密
         File compressFile = new File(this.backFilePath+"_compression");
         File encryptFile = new File(this.backFilePath+"_encryption");
@@ -131,16 +129,27 @@ public class BackManager {
             case "Huffman": {
                 Huffman hm = new Huffman();
                 hm.encode(tmpFile, compressFile);
+                // head数据编写
+                headMeta[0] = 1;
+                byte[] encodeMapByte = enByteArray(hm.getEncodeMap());
+                headMeta[1] = encodeMapByte.length;
+                headData = byteArrayConcat(headData, encodeMapByte);
                 break;
             }
             case "LZ77": {
                 LZ77 lz = new LZ77();
                 lz.compress(tmpFile, compressFile);
+                // head数据编写
+                headMeta[0] = 2;
+                headMeta[1] = 0;
                 break;
             }
             case "LZ77Pro": {
                 LZ77Pro lz = new LZ77Pro();
                 lz.compress(tmpFile, compressFile);
+                // head数据
+                headMeta[0] = 3;
+                headMeta[1] = 0;
                 break;
             }
             default:
@@ -155,20 +164,27 @@ public class BackManager {
         // 备份文件加密
         switch(this.encryptType){
             case "AES256": {
-                AES.encryptFile(password, tmpFile, encryptFile);
+                byte[] ivByte = AES.encryptFile(password, tmpFile, encryptFile);
+                // head数据
+                headMeta[2] = 1;
+                headMeta[3] = AES.ivLen;
+                headMeta[4] = AES.saltLen;
+                headData = byteArrayConcat(headData, ivByte);
+                headData = byteArrayConcat(headData, AES.salt);
                 break;
             }
             default:
                 break;
         }
         if(!this.encryptType.isEmpty()){
-            // todo: 这里没有成功删除
             tmpFile.delete();
             tmpFile = encryptFile;
         }
         // 将最终修改后的文件名称修改为backup文件名称，而不再携带编码等信息
         tmpFile.renameTo(backFile);
-
+        // 生成head文件
+        writeFile(this.backFilePath+"_head",
+                byteArrayConcat(intArray2byteArray(headMeta), headData));
         return true;
     }
 

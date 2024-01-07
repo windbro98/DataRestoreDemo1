@@ -12,6 +12,14 @@ public class Huffman {
     String[] encodeMap = new String[byteNum];
     int maxEncodeLen;
 
+    public void setEncodeMap(String[] encodeMap) {
+        this.encodeMap = encodeMap;
+    }
+
+    public String[] getEncodeMap() {
+        return encodeMap;
+    }
+
 
     //内部类 二叉树节点
     private class TreeNode implements Comparable<TreeNode> {
@@ -66,15 +74,9 @@ public class Huffman {
         is = new FileInputStream(origFile);
         compressFile(is, comprFile);
         is.close();
-        // 将编码表写入新文件
-        File encodeFile = new File(origFile.getAbsoluteFile()+".encode");
-        fileExistEval(encodeFile, true);
-        FileOutputStream os = new FileOutputStream(encodeFile);
-        os.write(enByteArray(encodeMap));
         // 计算压缩比
         double comprRadio = getCompressionRadio(freqMap);
         System.out.println("当前的压缩比为："+ comprRadio);
-        os.close();
     }
 
      private double getCompressionRadio(long[] freqMap){
@@ -197,17 +199,12 @@ public class Huffman {
         byte[] bufferIn = new byte[pageSize];
         byte[] bufferOut = new byte[pageSize];
 
-        // 获取编码表
-        File encodeFile = new File(comprFile.getAbsolutePath()+".encode");
-        FileInputStream is = new FileInputStream(encodeFile);
-        encodeMap = (String[]) deByteArray(is.readAllBytes());
-
         // 缓冲字符串，在读取文件的过程中不断进行处理
         String bufferStr = "";
         long recoverSize = 0;
         int idxOutNew=0;
         int readNum;
-        is = new FileInputStream(comprFile);
+        FileInputStream is = new FileInputStream(comprFile);
         while((readNum=is.read(bufferIn)) != -1){
             // 将本次读取的字符串添加到bufferStr中
             // 这里的选择主要是针对最后一次读取读不满的现象
@@ -234,7 +231,7 @@ public class Huffman {
                     os.write(bufferOut, 0, idxOutNew);
                     idxOutNew = 0;
                     recoverSize += pageSize;
-//                    System.out.println(recoverSize);
+                    System.out.println(recoverSize);
                 }
             }
         }

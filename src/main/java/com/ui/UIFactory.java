@@ -374,7 +374,7 @@ public class UIFactory {
                 Optional<ButtonType> res = confirmMsg.showAndWait();
                 if(res.get().getText().equals("Yes")){
                     // 恢复文件管理器初始化
-                    resM.initResManager(tfRes.getText(), "", "");
+                    resM.initResManager(tfRes.getText());
                     try {
                         // 恢复备份文件
                         ArrayList<String> errorFileList = resM.fileRestore(tfBackupRes.getText());
@@ -397,6 +397,20 @@ public class UIFactory {
                     } catch (ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     } catch (ReedSolomonException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidAlgorithmParameterException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchPaddingException e) {
+                        throw new RuntimeException(e);
+                    } catch (IllegalBlockSizeException e) {
+                        throw new RuntimeException(e);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    } catch (BadPaddingException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeySpecException e) {
+                        throw new RuntimeException(e);
+                    } catch (InvalidKeyException e) {
                         throw new RuntimeException(e);
                     }
                 }

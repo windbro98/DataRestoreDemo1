@@ -56,13 +56,14 @@ public class ClassTestWin {
         // 三大管理器初始化
         srcM.initSrcManager(srcDir);
         backM.initBackManager(backDir);
-        resM.initResManager(resDir, compType, encryType);
+        resM.initResManager(resDir);
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getFilePathSet());
         // 压缩方式和加密方式初始化
         // todo: 将压缩和加密的方式应用在恢复文件上
-//        backM.setCompressType("Huffman");
-//        backM.setEncryptType("AES256");
+        backM.setCompressType("Huffman");
+        backM.setEncryptType("AES256");
+        backM.setPassword("hello");
         // 备份
         backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
         String backFilePath = backM.getBackFilePath();
@@ -70,6 +71,8 @@ public class ClassTestWin {
         System.out.println("备份文件位置：");
         System.out.println(backFilePath);
         // 恢复
+        resM.setPassword("hello");
+        resM.initHead(backFilePath);
         ArrayList<String> errorFileList = resM.fileRestore(backFilePath);
         if(errorFileList.isEmpty())
             System.out.println("恢复成功");
