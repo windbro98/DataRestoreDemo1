@@ -27,31 +27,4 @@ public class ReedSolomon {
         decoder.decode(dataAsInts, ecBytes);
         return convertIntsToBytes(dataAsInts);
     }
-    // 错误模拟, numErrors代表错误数量
-    private static void simulateErrors(byte[] data, int numErrors) {
-        for (int i = 0; i < numErrors; i++) {
-            int index = (int) (Math.random() * data.length);
-            data[index] ^= 0x01;
-        }
-    }
-    // 测试程序
-    public static void main(String[] args) throws ReedSolomonException {
-        // 原数据
-        byte[] originalData = "HelloWorld".getBytes();
-        int ecBytes = 2;
-        System.out.println("Original data: " + new String(originalData));
-        // 数据编码
-        ReedSolomonEncoder encoder = new ReedSolomonEncoder(GenericGF.DATA_MATRIX_FIELD_256);
-        byte[] dataWithECC = encodeData(originalData, ecBytes,  encoder);
-        System.out.println("Encoded data: " + new String(dataWithECC));
-
-        // 模拟错误
-        simulateErrors(dataWithECC, 1);
-        System.out.println("Error data: "+new String(dataWithECC));
-
-        // 数据解码
-        ReedSolomonDecoder decoder = new ReedSolomonDecoder(GenericGF.DATA_MATRIX_FIELD_256);
-        byte[] decodedData = decodeData(dataWithECC, ecBytes, decoder);
-        System.out.println("Decoded data: " + new String(decodedData));
-    }
 }

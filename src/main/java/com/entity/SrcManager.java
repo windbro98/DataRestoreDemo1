@@ -182,6 +182,11 @@ public class SrcManager {
         filePathSet.replaceAll(s -> s.replace(srcDir+File.separator, ""));
         return filePathSet;
     }
+    // 将筛选器重置
+    public void resetFilter(){
+        fileFilters.clear();
+        comFilter = null;
+    }
 }
 
 

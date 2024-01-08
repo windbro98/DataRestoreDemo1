@@ -68,14 +68,16 @@ public class PageManagerUtil {
     // 将文件元数据写入页面
     // 返回值表示当前页面可写入的第一个索引位置
     public static int metaPaged(OutputStream os, File file, int pageStart, int fileType) throws IOException {
-        String[] metaData = getMetaData(file);
+        String[] metaData = getMetaData(file, true);
         byte[] metaBytes = enByteArray(metaData);
         int metaLen = metaBytes.length, idxStart=0;
         boolean firstFlag = true; // 代表是否是第一次写入文件元数据
         int copyLen, tailPage, idxStartAbs;
 
-        while(idxStart >= 0){
+        while(idxStart >= 0){ // 仍有元数据需要写入
             copyLen = min(metaLen-idxStart, Page.PAGE_DATA_LEN -pageStart);
+            // 当仍有元数据要写时，返回正值，代表还需要写入的元数据字节数
+            // 否则，返回负值，代表当前页面下一个字节开始索引（绝对值的含义）
             idxStart = copyByteArray(metaBytes, idxStart, pageStart, copyLen);
             idxStartAbs = Math.abs(idxStart);
             tailPage = ((fileType==0) && (metaLen-idxStartAbs)<=Page.PAGE_DATA_LEN) ? 1 : 0;

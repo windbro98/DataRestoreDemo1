@@ -13,7 +13,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
@@ -190,14 +189,7 @@ public class StyleUtil {
         vb.getChildren().add(text);
         return vb;
     }
-    // 创建图片组件
-//    public static ImageView createImageView(URL imageUrl, double radio){
-//        Image image = new Image(imageUrl.getPath().substring(1));
-//        ImageView imageView = new ImageView(image);
-//        imageView.setFitWidth(radio*WIDTH);
-//        imageView.setPreserveRatio(true);
-//        return imageView;
-//    }
+    // 创建图片，radio为图片的宽度占整个软件宽度的尺寸
     public static ImageView createImageView(String imageName, double radio){
         String imagePath = new File(fileConcat(IMAGE_DIR, imageName)).getAbsolutePath();
         Image image = new Image(imagePath);

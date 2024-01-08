@@ -221,6 +221,9 @@ public class UIFactory {
         cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
         cmb.getSelectionModel().selectFirst();
         if(cb.isSelected()) cb.setSelected(false);
+        // 将srcM的文件筛选器重置
+        SrcManager srcM = SrcManager.getInstance();
+        srcM.resetFilter();
     }
 
     // 恢复提交按钮触发效果

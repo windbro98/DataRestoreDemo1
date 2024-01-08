@@ -8,9 +8,10 @@ import static com.util.FileToolUtil.fileExistEval;
 
 // Huffman树
 public class Huffman {
-    final int byteNum = 256;
-    final int pageSize = 256;
-    String[] encodeMap = new String[byteNum];
+    final int byteNum = 256; // 字节数0-255
+    final int pageSize = 256; // 页面大小
+    String[] encodeMap = new String[byteNum]; // 编码表
+    public int lastLen; // 最后一个字节实际对应的二进制长度
 
     public void setEncodeMap(String[] encodeMap) {
         this.encodeMap = encodeMap;
@@ -111,8 +112,11 @@ public class Huffman {
             sb.delete(0, validLen);
         }
         // 将最后一个字节（不满8bit）写入压缩文件
-        if(!sb.isEmpty())
+        if(!sb.isEmpty()){
+            lastLen = 8-sb.length();
             os.write(binaryToByteArray(sb.toString()));
+
+        }
         os.close();
     }
 
@@ -224,7 +228,7 @@ public class Huffman {
                 // 判断本次是否解码成功
                 if(!decodeFlag){
                     // 本次解码不成功，但是已经进入最后一次解码，所以只需要写入即可
-                    if(is.available()==0){
+                    if(bufferStr.length()+is.available()==lastLen){
                         os.write(bufferOut, 0, idxOutNew);
                         recoverSize += idxOutNew;
                         break;

@@ -24,8 +24,8 @@ public class FileToolUtil {
     private FileToolUtil() {
     }
 
-    // 获取文件元数据
-    public static String[] getMetaData(File file) throws IOException {
+    // 获取文件元数据，包括创建时间，最后修改时间访问时间和最后修改时间
+    public static String[] getMetaData(File file, boolean lastAccess) throws IOException {
         String owner, creationTime, lastAccessTime, lastModifiedTime, filePermission;
 
         // 获取属性表
@@ -33,7 +33,6 @@ public class FileToolUtil {
         FileOwnerAttributeView ownerAttributeView = Files.getFileAttributeView(path, FileOwnerAttributeView.class);
         BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
         BasicFileAttributes attributes = basicFileAttributeView.readAttributes();
-
 
         // 时间，包括创建时间、最后访问时间和最后修改时间
         lastAccessTime = String.valueOf(attributes.lastAccessTime().toMillis());
@@ -48,7 +47,10 @@ public class FileToolUtil {
         if(file.canWrite()) filePermissionInt += 4;
         filePermission = String.valueOf(filePermissionInt);
 
-        return new String[]{owner, creationTime, lastAccessTime, lastModifiedTime, filePermission};
+        if(lastAccess) // 读取最后访问时间
+            return new String[]{owner, creationTime, lastAccessTime, lastModifiedTime, filePermission};
+        else // 不读取最后访问时间
+            return new String[]{owner, creationTime, lastModifiedTime, filePermission};
     }
 
     // 设置文件元数据
@@ -63,7 +65,7 @@ public class FileToolUtil {
             Files.setOwner(filePath, newOwner);
         }catch(IOException ade){
             // 无权限，一般是在Windows上且使用Idea直接运行
-            System.out.println("无权限");
+//            System.out.println("无权限");
         }
 
         // permission
@@ -73,7 +75,6 @@ public class FileToolUtil {
         if((filePermisson>>2)%2==1) file.setWritable(true);
 
         // lastModifiedTime, lastAccessTime, creationTime
-
         BasicFileAttributeView attributes = Files.getFileAttributeView(filePath, BasicFileAttributeView.class);
         attributes.setTimes(
                 FileTime.fromMillis(Long.parseLong(lastModifiedTime)), // lastModifiedTime
@@ -162,6 +163,40 @@ public class FileToolUtil {
         FileOutputStream os = new FileOutputStream(file);
         os.write(fileData);
         os.close();
+    }
+    // 以byte数组形式，读取文件中所有数据
+    public static byte[] readFile(File file) throws IOException {
+        FileInputStream is = new FileInputStream(file);
+        return is.readAllBytes();
+    }
+
+    // 删除文件或文件夹，文件直接删除，目录则只删除目录下所有文件
+    public static void deleteFile(String path) {
+        // 为传进来的路径参数创建一个文件对象
+        File file = new File(path);
+        // 如果目标路径不存在，则直接返回
+        if(!file.exists())
+            return;
+        // 如果目标路径是一个文件，那么直接调用delete方法删除即可
+        if(file.isFile())
+            file.delete();
+        // 如果是一个目录，那么必须把该目录下的所有文件和子目录全部删除，才能删除该目标目录，这里要用到递归函数
+        // 创建一个files数组，用来存放目标目录下所有的文件和目录的file对象
+        File[] files = file.listFiles();
+        // 循环遍历files数组
+        for(File temp : files){
+            // 判断该temp对象是否为文件对象
+            if (temp.isFile()) {
+                temp.delete();
+            }
+            // 判断该temp对象是否为目录对象
+            if (temp.isDirectory()) {
+                // 将该temp目录的路径给delete方法（自己），达到递归的目的
+                deleteFile(temp.getAbsolutePath());
+                // 确保该temp目录下已被清空后，删除该temp目录
+                temp.delete();
+            }
+        }
     }
 
     // 判断文本框是否为空

@@ -7,6 +7,7 @@ module com.ui.datarestoredemo1 {
     requires org.kordamp.ikonli.feather;
     requires com.alibaba.fastjson2;
     requires com.google.zxing;
+    requires junit;
 
 
     opens com.ui to javafx.fxml;

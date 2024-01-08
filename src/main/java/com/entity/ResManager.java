@@ -62,7 +62,7 @@ public class ResManager {
         // 将元数据转为int，并解析压缩和加密方式
         this.headMeta = byteArray2intArray(headMetaByte);
         this.compressType = headMeta[0];
-        this.encryptType = headMeta[2];
+        this.encryptType = headMeta[3];
     }
 
     // 备份文件恢复，返回错误的文件
@@ -78,8 +78,8 @@ public class ResManager {
             case 1: { // AES256 CBC
                 // 解析具体的head元数据
                 int encodeMapLen = headMeta[1]; // 压缩对应的编码表长度
-                int ivLen = headMeta[3]; // 加密的初始向量长度
-                int saltLen = headMeta[4]; // 加盐长度
+                int ivLen = headMeta[4]; // 加密的初始向量长度
+                int saltLen = headMeta[5]; // 加盐长度
                 // 解密后文件
                 File decryptBackFile = new File(backFilePath+"_decrypt");
                 // 获取初始向量
@@ -103,11 +103,13 @@ public class ResManager {
             case 1: { // Huffman
                 // 获取编码表
                 int encodeMapLen = headMeta[1];
+                int lastLen = headMeta[2];
                 byte[] encodeMapByte = Arrays.copyOfRange(headData, 0, encodeMapLen);
                 String[] encodeMap = (String[]) deByteArray(encodeMapByte);
                 // 将编码表写入Huffman类
                 Huffman hm = new Huffman();
                 hm.setEncodeMap(encodeMap);
+                hm.lastLen = lastLen; // 最后一个字节长度
                 // 解压文件
                 File decompressFile = new File(backFilePath+"_decompress");
                 hm.decode(tmpBackFile, decompressFile);

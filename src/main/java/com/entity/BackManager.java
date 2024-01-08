@@ -39,7 +39,9 @@ public class BackManager {
     private String encryptType=""; // 加密方式
     private String backFilePath=""; // 备份文件路径
     private String password = ""; // 加密时的备份文件密码
-    int headMetaLen = 5; // 备份文件会有阈值对应的head文件，这里是head文件中元数据的数量
+    final int headCompressMetaLen = 3; // head文件中压缩元数据长度
+    final int headEncryptMetaLen = 3; // head文件中加密元数据长度
+    int headMetaLen = 6; // 备份文件会有阈值对应的head文件，这里是head文件中元数据的数量
     /*
         类属性设置
      */
@@ -147,6 +149,7 @@ public class BackManager {
                 byte[] encodeMapByte = enByteArray(hm.getEncodeMap());
                 headMeta[1] = encodeMapByte.length;
                 headData = byteArrayConcat(headData, encodeMapByte);
+                headMeta[2] = hm.lastLen; // 最后一个字节对应的实际二进制长度
                 break;
             }
             case "LZ77": {
@@ -155,6 +158,7 @@ public class BackManager {
                 // 设置head文件的元数据：压缩类型和编码表长度
                 headMeta[0] = 2;
                 headMeta[1] = 0;
+                headMeta[2] = 0;
                 break;
             }
             case "LZ77Pro": {
@@ -163,6 +167,7 @@ public class BackManager {
                 // 设置head文件的元数据：压缩类型和编码表长度
                 headMeta[0] = 3;
                 headMeta[1] = 0;
+                headMeta[2] = 0;
                 break;
             }
             default:
@@ -181,9 +186,9 @@ public class BackManager {
             case "AES256": {
                 byte[] ivByte = AES.encryptFile(this.password, tmpFile, encryptFile);
                 // 设置head元数据，分别为加密类型，初始向量长度和加盐长度
-                headMeta[2] = 1;
-                headMeta[3] = AES.ivLen;
-                headMeta[4] = AES.saltLen;
+                headMeta[headCompressMetaLen] = 1;
+                headMeta[headCompressMetaLen+1] = AES.ivLen;
+                headMeta[headCompressMetaLen+2] = AES.saltLen;
                 // 将初始向量和盐存入head文件
                 headData = byteArrayConcat(headData, ivByte);
                 headData = byteArrayConcat(headData, AES.salt);
