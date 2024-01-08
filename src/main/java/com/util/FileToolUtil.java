@@ -27,8 +27,8 @@ public class FileToolUtil {
     // 获取文件元数据
     public static String[] getMetaData(File file) throws IOException {
         String owner, creationTime, lastAccessTime, lastModifiedTime, filePermission;
-//        file = new File("D:\\learning_programs\\java_programs\\javaFX_demo\\Readme.md");
 
+        // 获取属性表
         Path path = file.toPath();
         FileOwnerAttributeView ownerAttributeView = Files.getFileAttributeView(path, FileOwnerAttributeView.class);
         BasicFileAttributeView basicFileAttributeView = Files.getFileAttributeView(path, BasicFileAttributeView.class);
@@ -41,8 +41,6 @@ public class FileToolUtil {
         lastModifiedTime = String.valueOf(attributes.lastModifiedTime().toMillis());
         // 属主
         owner = ownerAttributeView.getOwner().getName();
-        // 查看当前的时间
-//        LocalDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong(lastAccessTime)), TimeZone.getDefault().toZoneId())
         // 权限
         int filePermissionInt = 0;
         if(file.canExecute()) filePermissionInt += 1;
@@ -64,7 +62,7 @@ public class FileToolUtil {
         try{
             Files.setOwner(filePath, newOwner);
         }catch(IOException ade){
-            // todo: 无权限警告
+            // 无权限，一般是在Windows上且使用Idea直接运行
             System.out.println("无权限");
         }
 
@@ -131,11 +129,12 @@ public class FileToolUtil {
         if(file.exists()){
             return true;
         }
-        else if(create){
+        else if(create){ // 确定创建文件
+            // 首先确定目录是否存在，不存在则创建
             String dir = file.getParent();
             flag = dirExistEval(new File(dir));
-            if(flag)
-                flag = file.createNewFile();;
+            if(flag) // 目录存在或创建成功
+                flag = file.createNewFile(); // 创建文件
             return flag;
         }
         else{
@@ -156,7 +155,7 @@ public class FileToolUtil {
 //        return Paths.get(dir, file).toString();
         return dir + File.separator + file;
     }
-
+    // 将文件数据fileData写入文件
     public static void writeFile(String filePath, byte[] fileData) throws IOException {
         File file = new File(filePath);
         fileExistEval(file, true);
@@ -167,5 +166,6 @@ public class FileToolUtil {
 
     // 判断文本框是否为空
     public static boolean tfIsEmpty(TextField tf){return tf.getText().isEmpty();}
+    // 判断文本区域是否为空
     public static boolean taIsEmpty(TextArea ta){return ta.getText().isEmpty();}
 }

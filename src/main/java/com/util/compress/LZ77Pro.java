@@ -1,4 +1,4 @@
-package com.util;
+package com.util.compress;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -7,21 +7,23 @@ import java.util.Arrays;
 import static com.util.DataUtil.idxSubArray;
 import static com.util.FileToolUtil.fileExistEval;
 
+// 更新版的LZ77，主要体现在当未在字典中匹配到时，匹配位置为-1，无匹配长度
+// 这样对于未匹配的长度，其消耗的字节数减少
 public class LZ77Pro {
     public static final int DEFAULT_BUFF_SIZE = 256;
     public byte[] searchList;
     public ByteBuffer currentBuffer;
     public int listLen;
-
+    // 默认初始化
     public LZ77Pro() {
         this(DEFAULT_BUFF_SIZE);
     }
-
+    // 自定义字典长度初始化
     public LZ77Pro(int buffSize) {
         searchList = new byte[buffSize];
         currentBuffer = ByteBuffer.allocate(buffSize);
     }
-
+    // 解压
     public void unCompress(File origFile, File enFile) throws IOException {
         BufferedInputStream is = new BufferedInputStream(new FileInputStream(origFile));
         BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(enFile));
@@ -62,13 +64,7 @@ public class LZ77Pro {
         os.close();
     }
 
-    /**
-     * Compress method
-     *
-     * @param enFile the name of the file to compress. Automatically appends
-     * a ".lz77" extension to inFilePath name when creating the output file
-     * @exception IOException if an error occurs
-     */
+    // 压缩
     public void compress(File enFile, File deFile) throws IOException {
         // set up input and output
         fileExistEval(deFile, true);
@@ -76,15 +72,18 @@ public class LZ77Pro {
         BufferedOutputStream os = new BufferedOutputStream(new FileOutputStream(deFile));
 
         int matchIndex = 0, nextInt, tmpIndex;
+        // 匹配成功时，使用3个byte表示，分别表示匹配位置、匹配长度和下一个字符
         byte[] pairCode = new byte[3];
+        // 匹配失败时，使用2个byte表示，分别表示匹配位置（-1）和下一个字符（即当前字符）
         byte[] unpairCode = new byte[2];
 
-        // while there are more characters - read a character
+        // 文件解码
         int readNum = 0;
         int writeNum = 0;
+        boolean debug = false;
         while ((nextInt = is.read()) != -1) {
             readNum ++;
-            // look in our search buffer for a match
+            // 在字典中寻找匹配
             byte nextByte = (byte) nextInt;
             currentBuffer.put(nextByte);
             tmpIndex = idxSubArray(searchList, Arrays.copyOf(currentBuffer.array(), currentBuffer.position()));
@@ -116,12 +115,13 @@ public class LZ77Pro {
                 // 更新字典，清空currentBuffer，准备下一次匹配
                 updateSearchList();
                 currentBuffer.clear();
-                System.out.println("写入字节数"+writeNum);
             }
-            System.out.println("读取字节数"+readNum);
         }
-        System.out.println("实际读取字节数"+readNum);
-        System.out.println("理论写入字节数"+writeNum);
+        // debug时，输出读取和写入字节数
+        if(debug){
+            System.out.println("实际读取字节数"+readNum);
+            System.out.println("理论写入字节数"+writeNum);
+        }
         // 善后工作
         listLen = 0;
         currentBuffer.clear();
@@ -130,6 +130,7 @@ public class LZ77Pro {
         os.close();
     }
 
+    // 更新字典
     private void updateSearchList(){
         // 全局listLen: 代表目前searchList的长度
         int bufferLen = currentBuffer.position(); // 本次写入的长度

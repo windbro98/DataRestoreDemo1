@@ -3,7 +3,7 @@ package com.test;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.google.zxing.common.reedsolomon.ReedSolomonException;
-import com.util.Huffman;
+import com.util.compress.Huffman;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -15,27 +15,21 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
+// 哈夫曼树测试
 public class HuffmanTest {
     public static void main(String[] args) throws IOException, ClassNotFoundException, ReedSolomonException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException {
         Huffman hm = new Huffman();
 
-        File backupFile = new File("BackupData/20231228_203501");
-        File compreFile = new File("BackupData/20231228_203501.huffman");
-        File deFile = new File("BackupData/20231228_203501.de");
+        // 源文件
+        File backupFile = new File("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1.txt");
+        // 压缩文件
+        File compreFile = new File("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1_huffman.txt");
+        // 恢复文件
+        File deFile = new File("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1_huffman_res.txt");
 
+        // 压缩
         hm.encode(backupFile, compreFile);
-//        backupFile.delete();
+        // 解压
         hm.decode(compreFile, deFile);
-
-//         文件的恢复
-        BackManager backM = BackManager.getInstance();
-        ResManager resM = ResManager.getInstance();
-////
-        // 压缩还原
-        backM.initBackManager(backupFile.getAbsolutePath());
-//        // 源文件
-////        backM.initBackManager(backupFile.getAbsolutePath(), "", "");
-        resM.initResManager("RestoreDataWin/");
-        resM.fileRestore(backM.getBackDir());
     }
 }

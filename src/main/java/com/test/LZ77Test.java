@@ -1,16 +1,19 @@
 package com.test;
 
-import com.util.LZ77;
-import com.util.LZ77Pro;
+import com.util.compress.LZ77;
 
 import java.io.File;
 import java.io.IOException;
 
+// LZ77测试
 public class LZ77Test {
     public static void main(String[] args) throws IOException {
-        String filePathOrig = "BackupData/20231228_203501";
-        String filePathCompr = "BackupData/20231228_203501.lz77";
-        String filePathUncompr = "BackupData/20231228_203501.de";
+        // 源文件
+        String filePathOrig = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1.txt";
+        // 备份文件
+        String filePathCompr = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1_lz77.txt";
+        // 恢复文件
+        String filePathUncompr = "D:\\learning_programs\\java_programs\\DataRestoreDemo1\\src\\main\\java\\com\\test\\testFile\\文本1_lz77_res.txt";
         File origFile = new File(filePathOrig);
         File enFile = new File(filePathCompr);
         File deFile = new File(filePathUncompr);

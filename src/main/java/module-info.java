@@ -17,4 +17,12 @@ module com.ui.datarestoredemo1 {
     opens com.util to javafx.fxml;
     exports com;
     opens com to javafx.fxml;
+    exports com.util.encrypt;
+    opens com.util.encrypt to javafx.fxml;
+    exports com.util.compress;
+    opens com.util.compress to javafx.fxml;
+    exports com.util.page;
+    opens com.util.page to javafx.fxml;
+    exports com.util.redundancyCheck;
+    opens com.util.redundancyCheck to javafx.fxml;
 }

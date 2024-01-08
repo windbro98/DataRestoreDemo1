@@ -39,16 +39,8 @@ public class DataUtil {
         return sb.toString();
     }
 
-//    public static String byteArray2binary(byte[] input){
-//        StringBuilder sb = new StringBuilder();
-//
-//        for (byte b : input) {
-//            byte2binary(sb, b);
-//        }
-//        return sb.toString();
-//    }
 
-//    // 这里使用了小端存储，换取更高的速度
+//    // 这里使用了小端存储，换取更高的速度，但是后来发现与Huffman冲突，舍弃
 //    public static void byte2binary(StringBuilder sb, byte value){
 //        int byteNum=8;
 //        // 转为int，便于计算
@@ -60,7 +52,7 @@ public class DataUtil {
 //        }
 //    }
 
-        // 这里使用的是大端存储，理论上与实际存储方式完全一致，但是速度会稍稍慢一些
+    // 这里使用的是大端存储，理论上与实际存储方式完全一致，但是速度会稍稍慢一些
     public static void byte2binary(StringBuilder sb, byte value) {
         int divider = 128;
         int byteNum = 8;
@@ -116,7 +108,7 @@ public class DataUtil {
         }
         return -1;
     }
-    // byte数组拼接
+    // 两个byte数组拼接
     public static byte[] byteArrayConcat(byte[] arr1, byte[] arr2){
         int arrLen1 = arr1.length;
         int arrLen2 = arr2.length;
@@ -127,16 +119,34 @@ public class DataUtil {
         return arr;
     }
 
+    // 将int数组转为byte数组，每个int转为4个对应byte
     public static byte[] intArray2byteArray(int[] intArr){
         ByteBuffer byteBuffer = ByteBuffer.allocate(intArr.length*4);
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(intArr);
         return byteBuffer.array();
     }
+    // 将byte数组转为int数组，每4个byte转为1个int
     public static int[] byteArray2intArray(byte[] byteArr){
         IntBuffer intBuffer = ByteBuffer.wrap(byteArr).order(ByteOrder.BIG_ENDIAN).asIntBuffer();
         int[] intArr = new int[intBuffer.remaining()];
         intBuffer.get(intArr);
         return intArr;
+    }
+    // 将byte数组转为int数组，每个byte对应一个int
+    public static int[] convertBytesToInts(byte[] data) {
+        int[] result = new int[data.length];
+        for (int i = 0; i < data.length; i++) {
+            result[i] = data[i] & 0xFF;
+        }
+        return result;
+    }
+    // 将int数组转为byte数组，每个int对应一个byte
+    public static byte[] convertIntsToBytes(int[] data) {
+        byte[] result = new byte[data.length];
+        for (int i = 0; i < data.length; i++) {
+            result[i] = (byte) data[i];
+        }
+        return result;
     }
 }

@@ -3,7 +3,6 @@ package com;
 import atlantafx.base.theme.PrimerLight;
 import atlantafx.base.theme.Styles;
 import com.ui.UIFactory;
-import com.util.UIConstants;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -15,24 +14,23 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import static com.util.StyleUtil.*;
+import static com.ui.StyleUtil.*;
 import static com.util.DataUtil.getIndexForArray;
-import static com.util.UIConstants.*;
+import static com.ui.UIConstants.*;
 
 // 主程序，也是GUI设计界面
 public class Main extends Application {
-    StackPane rootSp = new StackPane();
-    private int currentMenuId=-1;
-    private int tmpMenuId=-1;
-    String[] leftMenuInfo = {"备份", "恢复"};
-    int numMenu = leftMenuInfo.length;
-    VBox[] rightPages = new VBox[numMenu];
-    Button[] menuBtns = new Button[numMenu];
+    StackPane rootSp = new StackPane(); // 整体平面
+    private int currentMenuId=-1; // 当前选中的菜单项
+    private int tmpMenuId=-1; // 上一次选中的菜单项
+    String[] leftMenuInfo = {"备份", "恢复"}; // 左侧所有菜单项
+    int numMenu = leftMenuInfo.length; // 菜单项数目
+    VBox[] rightPages = new VBox[numMenu]; // 所有菜单项对应的右侧功能区的集合
+    Button[] menuBtns = new Button[numMenu]; // 菜单项对应的按钮
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -49,7 +47,7 @@ public class Main extends Application {
                 leftMenu,
                 rightPages[0]
         );
-        sp.setDividerPositions(MENU_WIDTH_RADIO);
+        sp.setDividerPositions(MENU_WIDTH_RATIO);
         // 左边框初始化
         initLeftMenu(leftMenu, leftMenuInfo, rightPages, sp, menuBtns);
         // 页面的拓扑结构
@@ -57,6 +55,7 @@ public class Main extends Application {
         Scene scene = new Scene(rootSp, WIDTH, HEIGHT);
         stage.setScene(scene);
 
+        // 运行
         stage.show();
     }
 
@@ -65,20 +64,23 @@ public class Main extends Application {
         for (int i = 0; i < leftMenuInfo.length; i++) {
             // 每个功能对应的页面
             Node page = rightPages[i];
-            // 每个功能对应的按钮
+            // 每个功能对应的按钮种类（"备份", "恢复"）
             String info = leftMenuInfo[i];
-            // 创建图片
+            // 创建该功能对应的按钮图片
+//            String imageName = String.format("left%d.png", i);
+//            ImageView imageView = createImageView(imageName, IMAGE_WIDTH_RATIO);
             String imagePath = String.format("/com/ui/datarestoredemo1/icons/left%d.png", i);
             URL imageUrl = this.getClass().getResource(imagePath);
-            ImageView imageView = createImageView(imageUrl, IMAGE_WIDTH_RADIO);
+            ImageView imageView = createImageView(imageUrl, IMAGE_WIDTH_RATIO);
+            // 创建该功能对应的按钮
             Button btn = new Button(info, imageView);
             btn.setContentDisplay(ContentDisplay.TOP);
             setNormalMenu(btn);
             // 按钮风格
             btn.getStyleClass().add(Styles.FLAT);
-            btn.setPrefWidth(MENU_WIDTH_RADIO*WIDTH);
+            btn.setPrefWidth(MENU_WIDTH_RATIO *WIDTH);
             // 按钮的触发效果
-            btn.setOnMouseClicked(mouseEvent -> {   // 点击
+            btn.setOnMouseClicked(mouseEvent -> {   // 点击，背景变为灰色
                 tmpMenuId = currentMenuId;
                 currentMenuId = getIndexForArray(leftMenuInfo, btn.getText());
                 if(tmpMenuId!=currentMenuId && tmpMenuId>=0){
@@ -87,10 +89,10 @@ public class Main extends Application {
                 }
                 sp.getItems().set(1, page);
             });
-            btn.setOnMouseMoved(mouseEvent -> {   // 悬浮
+            btn.setOnMouseMoved(mouseEvent -> {   // 悬浮，背景变为灰色，且字体加粗
                 setHoverMenu(btn);
             });
-            btn.setOnMouseExited(mouseEvent -> {   // 离开
+            btn.setOnMouseExited(mouseEvent -> {   // 离开，恢复正常字体
                 if(currentMenuId==getIndexForArray(leftMenuInfo, btn.getText())){
                     setClickedMenu(btn);
                 }else{

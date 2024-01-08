@@ -24,14 +24,19 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+// 整体功能测试
 public class ClassTestWin {
     public static void main(String[] args) throws IOException, ClassNotFoundException, ParseException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ReedSolomonException {
+        // 源目录、备份目录和恢复目录
         String srcDir = "OriginalDataWin";
         String backDir = "BackupData";
         String resDir = "RestoreDataWin";
+        // 时间格式
         DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 筛选的起始时间和终止时间
         LocalDateTime timeStart = LocalDateTime.from(timeFormat.parse("1998-10-10 10:00:00"));
         LocalDateTime timeEnd = LocalDateTime.from(timeFormat.parse("1998-10-10 10:02:00"));
+        // 获取源文件、备份文件和恢复文件管理器
         SrcManager srcM = SrcManager.getInstance();
         BackManager backM = BackManager.getInstance();
         ResManager resM = ResManager.getInstance();
@@ -43,18 +48,19 @@ public class ClassTestWin {
         // 清空文件夹
         delete(resDir);
         // 设置筛选器
-        srcM.setFilterFormat(".png\n", "排除");
-        srcM.setFilterName("filteredName\n", "排除");
-        srcM.setFilterTime(timeStart, timeEnd, "create", "排除");
-        srcM.setFilterTime(timeStart, timeEnd, "modified", "排除");
-        srcM.setFilterTime(timeStart, timeEnd, "access", "排除");
-        srcM.setFilterSize(56, 57, "排除");
+        srcM.setFilterFormat(".png\n", "排除"); // 文件类型
+        srcM.setFilterName("filteredName\n", "排除"); // 文件名
+        srcM.setFilterTime(timeStart, timeEnd, "create", "排除"); // 创建时间
+        srcM.setFilterTime(timeStart, timeEnd, "modified", "排除"); // 最后修改时间
+        srcM.setFilterTime(timeStart, timeEnd, "access", "排除"); // 最后访问时间
+        srcM.setFilterSize(56, 57, "排除"); // 文件大小
+        // 排除文件
         srcM.setFilterFile("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\fileFilter\\filteredFile.txt");
+        // 排除目录
         srcM.setFilterDir("D:\\learning_programs\\java_programs\\DataRestoreDemo1\\OriginalDataWin\\filter\\dirFilter\\filteredDir");
         // 三大管理器初始化
         srcM.initSrcManager(srcDir);
         backM.initBackManager(backDir);
-        resM.initResManager(resDir);
         System.out.println("所有源文件相对路径：");
         System.out.println(srcM.getFilePathSet());
         // 压缩方式和加密方式初始化
@@ -68,8 +74,8 @@ public class ClassTestWin {
         System.out.println("备份文件位置：");
         System.out.println(backFilePath);
         // 恢复
+        resM.initResManager(resDir, backM.getBackFilePath());
         resM.setPassword("hello");
-        resM.initHead(backFilePath);
         ArrayList<String> errorFileList = resM.fileRestore(backFilePath);
         if(errorFileList.isEmpty())
             System.out.println("恢复成功");

@@ -1,4 +1,4 @@
-package com.util;
+package com.util.redundancyCheck;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -6,7 +6,6 @@ import java.util.Scanner;
 
 import static com.util.DataUtil.byteArray2binary;
 
-// todo: 这里要做的事情就非常简单了：将data转换为二进制（见参考文件），然后将二进制data输入到这里，生成即可
 // CRC校验码
 // 注：这里将CRC校验码的数据报按照小端存储的方式进行解析，因此直接生成的校验码并不是原数据包的校验码，而是原数据报每1byte翻转后的校验码
 // 但是没有关系，因此对于整体来说，我们的编程是以字节Byte为单位进行的。只要每个字节都是正确的，我们这里显示的二进制编码方式并不重要

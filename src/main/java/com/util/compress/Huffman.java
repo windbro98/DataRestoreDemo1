@@ -1,4 +1,4 @@
-package com.util;
+package com.util.compress;
 
 import java.io.*;
 import java.util.*;
@@ -6,11 +6,11 @@ import java.util.*;
 import static com.util.DataUtil.*;
 import static com.util.FileToolUtil.fileExistEval;
 
+// Huffman树
 public class Huffman {
     final int byteNum = 256;
     final int pageSize = 256;
     String[] encodeMap = new String[byteNum];
-    int maxEncodeLen;
 
     public void setEncodeMap(String[] encodeMap) {
         this.encodeMap = encodeMap;
@@ -38,6 +38,7 @@ public class Huffman {
         TreeNode right;
 
         @Override
+        // 两个节点的比较，根据频率进行比较
         public int compareTo(TreeNode o) {
             long res = this.freq - o.freq;
             if (res > 0) return 1;
@@ -46,6 +47,7 @@ public class Huffman {
         }
     }
 
+    // 创建频率表
     private void constructFreqMap(FileInputStream is, long[] freqMap) throws IOException {
         byte[] bufferArray = new byte[byteNum];
         int readNum;
@@ -79,7 +81,8 @@ public class Huffman {
         System.out.println("当前的压缩比为："+ comprRadio);
     }
 
-     private double getCompressionRadio(long[] freqMap){
+    // 获取压缩率
+    private double getCompressionRadio(long[] freqMap){
         long bitsPrev=0, bitsNow=0;
         for (int i = 0; i < byteNum; i++) {
              bitsPrev += freqMap[i] * 8;
@@ -113,10 +116,7 @@ public class Huffman {
         os.close();
     }
 
-    /*
-     * 根据字符串建立二叉树
-     * @param s：要编码的源字符串
-     */
+     // 根据字符串建立二叉树
     private TreeNode constructTree(long[] freqMap) {
         // 新类：有序链表
         class OrderedList<T extends Comparable<T>> extends LinkedList<T> {
@@ -181,8 +181,6 @@ public class Huffman {
             path.append(root.val);
             encodeMap[root.idx] = path.substring(1);
             path.deleteCharAt(path.length()-1);
-            // 计算最长编码长度
-            maxEncodeLen = Math.max(path.length(), maxEncodeLen);
             return;
         }
         path.append(root.val);
@@ -223,15 +221,24 @@ public class Huffman {
                         break;
                     }
                 }
-                // 判断本次是否解码成功，不成功则跳出解码过程，准备下一次解码
-                if(!decodeFlag)
-                    break;
+                // 判断本次是否解码成功
+                if(!decodeFlag){
+                    // 本次解码不成功，但是已经进入最后一次解码，所以只需要写入即可
+                    if(is.available()==0){
+                        os.write(bufferOut, 0, idxOutNew);
+                        recoverSize += idxOutNew;
+                        break;
+                    }
+                    // 本次解码不成功，但是仍有可解码内容，所以跳出本次循环，进行下一次解码
+                    else {
+                        break;
+                    }
+                }
                 // 将得到的数据写入输出文件
-                if(idxOutNew==pageSize || (is.available()==0 && bufferStr.isEmpty())){
+                if(idxOutNew==pageSize){
                     os.write(bufferOut, 0, idxOutNew);
                     idxOutNew = 0;
                     recoverSize += pageSize;
-                    System.out.println(recoverSize);
                 }
             }
         }

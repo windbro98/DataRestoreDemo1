@@ -1,25 +1,13 @@
 package com.ui;
 
 import atlantafx.base.layout.InputGroup;
-import atlantafx.base.theme.Styles;
 import com.entity.BackManager;
 import com.entity.ResManager;
 import com.entity.SrcManager;
 import com.google.zxing.common.reedsolomon.ReedSolomonException;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.stage.DirectoryChooser;
-import javafx.util.converter.LocalDateTimeStringConverter;
-import javafx.util.converter.LongStringConverter;
-import org.kordamp.ikonli.javafx.FontIcon;
-import org.kordamp.ikonli.material2.Material2MZ;
-import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Stage;
+import javafx.scene.layout.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -31,21 +19,19 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
 import static com.util.FileToolUtil.tfIsEmpty;
-import static com.util.StyleUtil.*;
-import static com.util.StyleUtil.createPopup;
-import static com.util.UIConstants.*;
+import static com.ui.StyleUtil.*;
+import static com.ui.StyleUtil.createPopup;
+import static com.ui.UIConstants.*;
 
 // UI设计
 public class UIFactory {
 
-    public static Material2MZ btnFileIcon = Material2MZ.PAGEVIEW;
-    public static DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
 
 
     // 构造方法私有化
@@ -57,19 +43,21 @@ public class UIFactory {
         VBox backupPage = new VBox();
 
         // 地址设置文本框
-        VBox textAddr = createText("地址设置");
+        VBox textAddr = createText("地址设置", true);
         // “源地址”文本框
         InputGroup srcGroup = createAddrGroup("源地址", false); // 源目录
         // “备份地址”文本框
         InputGroup backupGroup = createAddrGroup("备份地址", false); //备份文件路径
         // 筛选文本框
-        VBox textFilter = createText("文件筛选");
+        VBox textFilter = createText("文件筛选", true);
         // 文件类型选择
         InputGroup formatGroup = createTextFilterGroup("文件类型");
         // 文件名选择
         InputGroup nameGroup = createTextFilterGroup("文件名");
         // 文件大小选择
         InputGroup sizeGroup = createSizeFilterGroup();
+        // 时间格式
+        VBox textTime = createText("(输入时间格式：yyyy-MM-dd HH:mm:ss. 例: 2024-01-01 10:00:00)", false);
         // 文件时间选择
         InputGroup createTimeGroup = createTimeFilterGroup("创建时间");
         InputGroup modifiedTimeGroup = createTimeFilterGroup("修改时间");
@@ -78,7 +66,7 @@ public class UIFactory {
         InputGroup fileGroup = createFileFilterGroup("排除文件路径", true);
         InputGroup dirGroup = createFileFilterGroup("排除目录路径", false);
         // 压缩与加密文本框
-        VBox textPro = createText("压缩与加密");
+        VBox textPro = createText("压缩与加密", true);
         // 压缩方式选择
         InputGroup compressGroup = createChoiceGroup("压缩方式", FXCollections.observableArrayList("无", "Huffman", "LZ77", "LZ77Pro"));
         // 加密方式选择
@@ -89,12 +77,12 @@ public class UIFactory {
         HBox hb = createButtonLayout(btnSubmit, btnClear);
         // 将所有组件添加到页面中
         backupPage.getChildren().addAll(textAddr, srcGroup, backupGroup, textFilter, formatGroup, nameGroup, sizeGroup,
-                createTimeGroup, modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, textPro, compressGroup,
+                textTime, createTimeGroup, modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, textPro, compressGroup,
                 encryptGroup, hb);
         // 获取源目录和备份目录
         TextField tfSrc = (TextField) srcGroup.getChildren().get(1);
         TextField tfBackupSave = (TextField) backupGroup.getChildren().get(1);
-        // 当用户点击提交时，对各个manager进行赋值
+        // 当用户点击提交时，根据各个组件的值，对SrcManager, BackManager进行初始化
         btnBackup(btnSubmit, btnClear, tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup,
                 modifiedTimeGroup, accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup, rootSp);
         return backupPage;
@@ -102,10 +90,10 @@ public class UIFactory {
 
     // 恢复页面初始化
     public static VBox initRestorePage(StackPane rootSp){
+        // 恢复页面
         VBox restorePage = new VBox();
-
         // 文本框
-        VBox textAddr = createText("地址设置");
+        VBox textAddr = createText("地址设置", true);
         InputGroup backupGroup = createAddrGroup("备份地址", true); // 备份文件路径
         InputGroup resGroup = createAddrGroup("恢复地址", false); // 恢复路径
         // 按钮“提交”与“清空”
@@ -113,121 +101,11 @@ public class UIFactory {
         Button btnClear = new Button("清空");
         HBox hb = createButtonLayout(btnSubmit, btnClear);
         restorePage.getChildren().addAll(textAddr, backupGroup, resGroup, hb);
-
+        // 用户点击提交时，对BackManager和ResManager进行初始化
         btnRestore(btnSubmit, btnClear, (TextField) (backupGroup.getChildren().get(1)),
                 (TextField) resGroup.getChildren().get(1), rootSp);
         return restorePage;
     }
-
-    // 时间输入框
-    private static InputGroup createTimeFilterGroup(String prompt){
-        InputGroup res = new InputGroup();
-        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
-        TextField timeStartPrompt = createCustomField("起始", INNER_PROMPT_WIDTH_RADIO, false);
-        TextField timeEndPrompt = createCustomField("终止", INNER_PROMPT_WIDTH_RADIO, false);
-        TextField timeStart = createCustomField("", TIME_WIDTH_RADIO, true);
-        TextField timeEnd = createCustomField("", TIME_WIDTH_RADIO, true);
-        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
-
-        cob.setValue("排除");
-        timeStart.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
-        timeEnd.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter(timeFormat, null)));
-        res.getChildren().addAll(cb, timeStartPrompt, timeStart, timeEndPrompt, timeEnd, cob);
-
-        return res;
-    }
-
-    // 大小输入框
-    private static InputGroup createSizeFilterGroup(){
-        CheckBox cb = createCheckBox("文件大小", PROMPT_WIDTH_RADIO);
-        TextField sizeMinPrompt = createCustomField("最小", INNER_PROMPT_WIDTH_RADIO, false);
-        TextField sizeMaxPrompt = createCustomField("最大", INNER_PROMPT_WIDTH_RADIO, false);
-        TextField sizeMin = createCustomField("", SIZE_WIDTH_RADIO, true);
-        TextField sizeMax = createCustomField("", SIZE_WIDTH_RADIO, true);
-        TextField sizeUnit1 = createCustomField("KB", INNER_UNIT_WIDTH_RADIO, false);
-        TextField sizeUnit2 = createCustomField("KB", INNER_UNIT_WIDTH_RADIO, false);
-
-        sizeUnit1.setEditable(false);
-        sizeUnit2.setEditable(false);
-        sizeMin.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
-        sizeMax.setTextFormatter(new TextFormatter<>(new LongStringConverter()));
-        ChoiceBox<String> cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
-        cob.setValue("排除");
-
-        return new InputGroup(cb, sizeMinPrompt, sizeMin, sizeUnit1, sizeMaxPrompt, sizeMax, sizeUnit2, cob);
-    }
-
-    // 文本框组合，使用的是textField
-    private static InputGroup createAddrGroup(String prompt, boolean isFile){
-        // 提示文本框
-        TextField tfPrompt = createCustomField(prompt, PROMPT_WIDTH_RADIO, false);
-        // 内容显示文本框
-        TextField tf = createCustomField("", CONTENT_WIDTH_RADIO, false);
-        // 文件选择按钮
-        Button btn = createBtnFileChoose(tf, isFile);
-
-        return new InputGroup(tfPrompt, tf, btn);
-    }
-
-    // 文本框组合，使用的是
-    // fileType: 0-目录；1-文件；2-目录+文件
-    public static InputGroup createTextFilterGroup(String prompt){
-        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
-        TextArea ta = createCustomArea("", CONTENT_WIDTH_RADIO, true);
-
-        ChoiceBox cob = createChoiceBox(new String[]{"包含", "排除"}, BUTTON_WIDTH_RADIO);
-        cob.setValue("排除");
-
-        return new InputGroup(cb, ta, cob);
-    }
-
-    public static InputGroup createFileFilterGroup(String prompt, boolean isFile){
-        CheckBox cb = createCheckBox(prompt, PROMPT_WIDTH_RADIO);
-        TextArea ta = createCustomArea("", CONTENT_WIDTH_RADIO, true);
-        Button btn=createBtnFileChoose(ta, isFile);
-        return new InputGroup(cb, ta, btn);
-    }
-
-
-
-    public static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
-        Button btn = new Button("", new FontIcon(btnFileIcon));
-        btn.setPrefWidth(WIDTH*BUTTON_WIDTH_RADIO);
-        btn.getStyleClass().addAll(Styles.BUTTON_ICON);
-        Stage stage = new Stage();
-
-        if(isFile){ // 文件选择
-            FileChooser fc = new FileChooser();
-            File projectDir = new File(System.getProperty("user.dir"));
-            fc.setInitialDirectory(projectDir);
-            btn.setOnMouseClicked(mouseEvent -> {
-                File file = fc.showOpenDialog(stage);
-                if(!(file==null)){
-                    if(tc instanceof TextField)
-                        tc.setText(file.getAbsolutePath());
-                    else if(tc instanceof TextArea)
-                        tc.appendText(file.getAbsolutePath()+'\n');
-                }
-            });
-        }else { // 目录选择
-            DirectoryChooser dc = new DirectoryChooser();
-            File projectDir = new File(System.getProperty("user.dir"));
-            dc.setInitialDirectory(projectDir);
-            btn.setOnMouseClicked(mouseEvent -> {
-                File file = dc.showDialog(stage);
-                if(!(file==null)){
-                    if(tc instanceof TextField){
-                        tc.setText(file.getAbsolutePath());
-                    }
-                    else if(tc instanceof TextArea)
-                        tc.appendText(file.getAbsolutePath()+'\n');
-                }
-            });
-        }
-
-        return btn;
-    }
-
 
     // 备份页面的提交按钮
     public static void btnBackup(Button btnSubmit, Button btnClear, TextField tfSrc, TextField tfBackupSave,
@@ -295,7 +173,7 @@ public class UIFactory {
         });
     }
 
-
+    // 备份界面的清空按钮
     public static void backupClear(TextField tfSrc, TextField tfBackupSave, InputGroup formatGroup, InputGroup nameGroup,
                                    InputGroup sizeGroup, InputGroup createTimeGroup, InputGroup modifiedTimeGroup,
                                    InputGroup accessTimeGroup, InputGroup fileGroup, InputGroup dirGroup,
@@ -363,12 +241,13 @@ public class UIFactory {
                 // 信息确认窗口
                 Alert confirmMsg = createConfirmAlert("是否确认信息");
                 Optional<ButtonType> res = confirmMsg.showAndWait();
-                if(res.get().getText().equals("Yes")){
+                if(res.get().getText().equals("Yes")){ // 用户确认提交
+                    // 获取备份文件和对应的head文件
                     String backFilePath = tfBackupRes.getText();
                     File backFile = new File(backFilePath);
                     File headFile = new File(backFilePath+"_head");
                     // 备份文件存在性检验
-                    if(!backFile.exists()){ // 检验输入的备份文件是否存在
+                    if(!backFile.exists()){ // 检验输入的备份文件是否存在，
                         try {
                             createPopup("恢复失败！备份文件不存在！", rootSp);
                             return;
@@ -384,10 +263,10 @@ public class UIFactory {
                             throw new RuntimeException(e);
                         }
                     }
+                    // 已验证备份文件和对应head文件存在，开始进行文件恢复
                     // 恢复文件管理器初始化
-                    resM.initResManager(tfRes.getText());
                     try {
-                        resM.initHead(backFilePath);
+                        resM.initResManager(tfRes.getText(), backFilePath);
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -400,13 +279,13 @@ public class UIFactory {
                     try {
                         // 恢复备份文件
                         ArrayList<String> errorFileList = resM.fileRestore(tfBackupRes.getText());
-                        if(errorFileList.isEmpty()){
+                        if(errorFileList.isEmpty()){ // 无损坏文件
                             // 提示窗口: 恢复成功
                             createPopup("文件恢复成功", rootSp);
                             tfBackupRes.clear();
                             tfRes.clear();
                         }
-                        else{
+                        else{ // 有损坏文件，弹出窗口提示损坏文件名
                             StringBuilder sbErrorFiles = new StringBuilder();
                             for(String errorFile : errorFileList){
                                 sbErrorFiles.append(errorFile);
@@ -414,120 +293,129 @@ public class UIFactory {
                             }
                             createPopup("出现损坏文件！损坏文件为：\n"+sbErrorFiles, rootSp);
                         }
-                    } catch (IOException | InterruptedException e) {
-                        throw new RuntimeException(e);
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    } catch (ReedSolomonException e) {
-                        throw new RuntimeException(e);
-                    } catch (InvalidAlgorithmParameterException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchPaddingException e) {
-                        throw new RuntimeException(e);
-                    } catch (IllegalBlockSizeException e) {
-                        throw new RuntimeException(e);
-                    } catch (NoSuchAlgorithmException e) {
+                    } catch (IOException | InterruptedException | InvalidKeySpecException | InvalidKeyException |
+                             NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException |
+                             InvalidAlgorithmParameterException | ReedSolomonException | ClassNotFoundException e) {
                         throw new RuntimeException(e);
                     } catch (BadPaddingException e) {
-                        try {
+                        try { // 备份文件为加密文件且输入密码错误时，弹窗提示
                             createPopup("备份文件密码错误！", rootSp);
-                            tfBackupRes.clear();
-                            tfRes.clear();
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }
-                    } catch (InvalidKeySpecException e) {
-                        throw new RuntimeException(e);
-                    } catch (InvalidKeyException e) {
-                        throw new RuntimeException(e);
                     }
                 }
             }
         });
     }
-
+    // 文件压缩和加密初始化
     public static void initEncoder(InputGroup compressGroup, InputGroup encryptGroup, StackPane sp){
+        // 勾选框
         CheckBox cbCompress = (CheckBox) compressGroup.getChildren().get(0);
         CheckBox cbEncrypt = (CheckBox) encryptGroup.getChildren().get(0);
+        // 文件备份管理器
         BackManager backM = BackManager.getInstance();
 
-        if(cbCompress.isSelected())
+        if(cbCompress.isSelected()) // 用户确认压缩
         {
+            // 获取压缩方式并初始化
             ComboBox<String> cmb = (ComboBox<String>) compressGroup.getChildren().get(1);
             String compressType = cmb.getSelectionModel().getSelectedItem();
             backM.setCompressType(compressType);
         }
-        if(cbEncrypt.isSelected()){
+        if(cbEncrypt.isSelected()){ // 用户确认加密
+            // 获取加密方式
             ComboBox<String> cmb = (ComboBox<String>) encryptGroup.getChildren().get(1);
             String encryptType = cmb.getSelectionModel().getSelectedItem();
+            // 提示框，提示用户输入密码，并进行初始化
             if(!encryptType.equals("无")){
                 String prompt = "您选择了文件加密，请输入您的密码（密码长度不大于32位）:";
                 String password = createPasswordDialog(prompt, sp);
                 backM.setPassword(password);
             }
+            // 加密方式初始化
             backM.setEncryptType(encryptType);
         }
     }
-
+    // 文件筛选器初始化
     public static void initFilter(InputGroup formatGroup, InputGroup nameGroup, InputGroup sizeGroup,
                                   InputGroup createTimeGroup, InputGroup modifiedTimeGroup, InputGroup accessTimeGroup,
                                   InputGroup fileGroup, InputGroup dirGroup){
-        CheckBox cbFormat = (CheckBox) formatGroup.getChildren().get(0);
-        CheckBox cbName = (CheckBox) nameGroup.getChildren().get(0);
-        CheckBox cbSize = (CheckBox) sizeGroup.getChildren().get(0);
-        CheckBox cbCreateTime = (CheckBox) createTimeGroup.getChildren().get(0);
-        CheckBox cbModifiedTime = (CheckBox) modifiedTimeGroup.getChildren().get(0);
-        CheckBox cbAccessTime = (CheckBox) accessTimeGroup.getChildren().get(0);
-        CheckBox cbFile = (CheckBox) fileGroup.getChildren().get(0);
-        CheckBox cbDir = (CheckBox) dirGroup.getChildren().get(0);
+        // 筛选器勾选框
+        CheckBox cbFormat = (CheckBox) formatGroup.getChildren().get(0); // 文件格式
+        CheckBox cbName = (CheckBox) nameGroup.getChildren().get(0); // 文件名
+        CheckBox cbSize = (CheckBox) sizeGroup.getChildren().get(0); // 文件大小
+        CheckBox cbCreateTime = (CheckBox) createTimeGroup.getChildren().get(0); // 创建时间
+        CheckBox cbModifiedTime = (CheckBox) modifiedTimeGroup.getChildren().get(0); // 最后修改时间
+        CheckBox cbAccessTime = (CheckBox) accessTimeGroup.getChildren().get(0); // 最后访问时间
+        CheckBox cbFile = (CheckBox) fileGroup.getChildren().get(0); // 选择文件
+        CheckBox cbDir = (CheckBox) dirGroup.getChildren().get(0); // 选择目录
+        // 源文件管理器初始化
         SrcManager srcM = SrcManager.getInstance();
+        // 文本框
         TextArea ta;
         TextField tfStart, tfEnd;
+        // 选择框
         ChoiceBox cob;
 
+        // 用户确认对文件格式筛选
         if(cbFormat.isSelected()){
+            // 获取文件格式的筛选方式和筛选类型，并进行筛选器初始化
             ta = (TextArea) formatGroup.getChildren().get(1);
             cob = (ChoiceBox) formatGroup.getChildren().get(2);
             srcM.setFilterFormat(ta.getText(), (String) cob.getValue());
         }
+        // 用户确认对文件名称筛选
         if(cbName.isSelected()){
+            // 获取文件格式的筛选方式和筛选类型，并进行筛选器初始化
             ta = (TextArea) nameGroup.getChildren().get(1);
             cob = (ChoiceBox) nameGroup.getChildren().get(2);
             srcM.setFilterName(ta.getText(), (String) cob.getValue());
         }
+        // 用户确认对文件大小筛选
         if(cbSize.isSelected()){
+            // 获取文件大小的筛选方式和筛选类型，并进行筛选器初始化
             tfStart = (TextField) sizeGroup.getChildren().get(2);
             tfEnd = (TextField) sizeGroup.getChildren().get(5);
             cob = (ChoiceBox) sizeGroup.getChildren().get(7);
             srcM.setFilterSize(Long.parseLong(tfStart.getText()), Long.parseLong(tfEnd.getText()), (String) cob.getValue());
         }
+        // 用户确认对文件创建时间筛选
         if(cbCreateTime.isSelected()){
+            // 获取文件创建时间的筛选方式和筛选类型，并进行筛选器初始化
             tfStart = (TextField) createTimeGroup.getChildren().get(2);
             tfEnd = (TextField) createTimeGroup.getChildren().get(4);
             cob = (ChoiceBox) createTimeGroup.getChildren().get(5);
-            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "create", (String) cob.getValue());
+            srcM.setFilterTime(LocalDateTime.from(TIME_FORMAT.parse(tfStart.getText())),
+                    LocalDateTime.from(TIME_FORMAT.parse(tfEnd.getText())), "create", (String) cob.getValue());
         }
+        // 用户确认对文件最后修改时间筛选
         if(cbModifiedTime.isSelected()){
+            // 获取文件最后修改时间的筛选方式和筛选类型，并进行筛选器初始化
             tfStart = (TextField) modifiedTimeGroup.getChildren().get(2);
             tfEnd = (TextField) modifiedTimeGroup.getChildren().get(4);
             cob = (ChoiceBox) modifiedTimeGroup.getChildren().get(5);
-            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "modified", (String) cob.getValue());
+            srcM.setFilterTime(LocalDateTime.from(TIME_FORMAT.parse(tfStart.getText())),
+                    LocalDateTime.from(TIME_FORMAT.parse(tfEnd.getText())), "modified", (String) cob.getValue());
         }
+        // 用户确认对文件最后访问时间筛选
         if(cbAccessTime.isSelected()){
+            // 获取文件最后访问时间的筛选方式和筛选类型，并进行筛选器初始化
             tfStart = (TextField) accessTimeGroup.getChildren().get(2);
             tfEnd = (TextField) accessTimeGroup.getChildren().get(4);
             cob = (ChoiceBox) accessTimeGroup.getChildren().get(5);
-            srcM.setFilterTime(LocalDateTime.from(timeFormat.parse(tfStart.getText())),
-                    LocalDateTime.from(timeFormat.parse(tfEnd.getText())), "access", (String) cob.getValue());
+            srcM.setFilterTime(LocalDateTime.from(TIME_FORMAT.parse(tfStart.getText())),
+                    LocalDateTime.from(TIME_FORMAT.parse(tfEnd.getText())), "access", (String) cob.getValue());
         }
-
+        // 用户确认对选中文件进行排除
         if(cbFile.isSelected()){
+            // 获取排除的文件，并进行筛选器初始化
             ta = (TextArea) fileGroup.getChildren().get(1);
             srcM.setFilterFile(ta.getText());
         }
+        // 用户确认对选中目录进行排除
         if(cbDir.isSelected()){
+            // 获取排除的目录，并进行筛选器初始化
             ta = (TextArea) dirGroup.getChildren().get(1);
             srcM.setFilterDir(ta.getText());
         }

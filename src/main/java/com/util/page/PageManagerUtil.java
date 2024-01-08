@@ -1,13 +1,8 @@
-package com.util;
+package com.util.page;
 
 import com.google.zxing.common.reedsolomon.ReedSolomonException;
 
 import java.io.*;
-import java.nio.file.*;
-import java.nio.file.attribute.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import static com.util.DataUtil.*;
 import static com.util.FileToolUtil.*;
@@ -58,7 +53,7 @@ public class PageManagerUtil {
 
         // 写入文件名
         while(idxStart >= 0){
-            copyLen = min(dirBytes.length-idxStart, Page.pageDataLen);
+            copyLen = min(dirBytes.length-idxStart, Page.PAGE_DATA_LEN);
 
             idxStart = copyByteArray(dirBytes, idxStart, 0, copyLen);
             // 生成tmpHead
@@ -80,10 +75,10 @@ public class PageManagerUtil {
         int copyLen, tailPage, idxStartAbs;
 
         while(idxStart >= 0){
-            copyLen = min(metaLen-idxStart, Page.pageDataLen-pageStart);
+            copyLen = min(metaLen-idxStart, Page.PAGE_DATA_LEN -pageStart);
             idxStart = copyByteArray(metaBytes, idxStart, pageStart, copyLen);
             idxStartAbs = Math.abs(idxStart);
-            tailPage = ((fileType==0) && (metaLen-idxStartAbs)<=Page.pageDataLen) ? 1 : 0;
+            tailPage = ((fileType==0) && (metaLen-idxStartAbs)<=Page.PAGE_DATA_LEN) ? 1 : 0;
             if(firstFlag){
                 tmpPage.metaLen = (byte)copyLen;
                 tmpPage.setTailPage(tailPage);
@@ -135,7 +130,6 @@ public class PageManagerUtil {
 
         readPage(is);
         while(tmpPage.getNameLen()>0){
-            // tmpPage.getNameLen() -> headLen
             if(fileNameByte != null){
                 int prevLen = fileNameByte.length;
                 tmpFileNameByte = fileNameByte;
@@ -147,7 +141,7 @@ public class PageManagerUtil {
                 fileNameByte = new byte[tmpPage.getNameLen()];
                 System.arraycopy(tmpPage.pageData, 0, fileNameByte, 0, tmpPage.getNameLen());
             }
-            if(tmpPage.getNameLen()==Page.pageDataLen) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
+            if(tmpPage.getNameLen()==Page.PAGE_DATA_LEN) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
                 readPage(is);
             else
                 break;
@@ -162,7 +156,6 @@ public class PageManagerUtil {
         byte[] tmpMetaByte;
 
         while(tmpPage.getMetaLen()>0){
-            // tmpPage.getNameLen() -> headLen
             if(metaByte != null){
                 int prevLen = metaByte.length;
                 tmpMetaByte = metaByte;
@@ -174,7 +167,7 @@ public class PageManagerUtil {
                 metaByte = new byte[tmpPage.getMetaLen()];
                 System.arraycopy(tmpPage.pageData, tmpPage.getNameLen(), metaByte, 0, tmpPage.getMetaLen());
             }
-            if(tmpPage.getMetaLen()==(Page.pageDataLen-tmpPage.nameLen)) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
+            if(tmpPage.getMetaLen()==(Page.PAGE_DATA_LEN -tmpPage.nameLen)) // headLen==Page.pageDataLen, 表示此时标题仍然没有读尽
                 readPage(is);
             else
                 break;
@@ -205,8 +198,8 @@ public class PageManagerUtil {
         tmpPage.setCrcCode();;
         tmpPage.setRSCode();
         // 计算循环冗余校验码
-        os.write(tmpPage.getHead(), 0, Page.pageHeadLen);
-        os.write(tmpPage.pageData, 0, Page.pageDataLen);
+        os.write(tmpPage.getHead(), 0, Page.PAGE_HEAD_LEN);
+        os.write(tmpPage.pageData, 0, Page.PAGE_DATA_LEN);
         tmpPage.reset();
     }
 
@@ -225,9 +218,9 @@ public class PageManagerUtil {
         // 读取页面数据
         int realDataLen;
         if(dataStart>0){
-            byte[] tmpDataRemain = new byte[Page.pageDataLen -dataStart];
+            byte[] tmpDataRemain = new byte[Page.PAGE_DATA_LEN -dataStart];
             realDataLen = is.read(tmpDataRemain);
-            System.arraycopy(tmpDataRemain, 0, tmpPage.pageData, dataStart, Page.pageDataLen-dataStart);
+            System.arraycopy(tmpDataRemain, 0, tmpPage.pageData, dataStart, Page.PAGE_DATA_LEN -dataStart);
         }
         else{
             realDataLen = is.read(tmpPage.pageData);
@@ -239,21 +232,21 @@ public class PageManagerUtil {
     // 若文件名&元数据在本次未读完，则返回下一次文件名需要开始的位置；如果文件名在本次读完，则返回该帧下一个空的字节索引
     public static int copyByteArray(byte[] byteArray, int nameStart, int pageStart, int copyLen) throws IOException {
         int arrayLen = byteArray.length;
-        if(arrayLen-nameStart <= Page.pageDataLen){
+        if(arrayLen-nameStart <= Page.PAGE_DATA_LEN){
             System.arraycopy(byteArray, nameStart, tmpPage.pageData, pageStart, copyLen);
             // 当文件名已读完的时候，返回-(当前帧第一个空闲位置坐标)
             return -(arrayLen-nameStart)-pageStart;
         }
         else{
-            System.arraycopy(byteArray, nameStart, tmpPage.pageData, pageStart, Page.pageDataLen-pageStart);
+            System.arraycopy(byteArray, nameStart, tmpPage.pageData, pageStart, Page.PAGE_DATA_LEN -pageStart);
             // 当文件名未读
-            return nameStart+Page.pageDataLen-pageStart;
+            return nameStart+Page.PAGE_DATA_LEN -pageStart;
         }
     }
 
     // 读取页面
     public static void readPage(FileInputStream is) throws IOException, ReedSolomonException {
-        byte[] tmpHead = new byte[Page.pageHeadLen];
+        byte[] tmpHead = new byte[Page.PAGE_HEAD_LEN];
         is.read(tmpHead);
         tmpPage.setHead(tmpHead);
         is.read(tmpPage.pageData);
@@ -264,7 +257,7 @@ public class PageManagerUtil {
 
         // 使用RS纠删码校验，随后使用循环校验码确认
         tmpPage.revisePageData();
-        boolean pageCheckStatus = Page.crc.judge(tmpPage.pageData, tmpPage.crcCode);
+        boolean pageCheckStatus = Page.PAGE_CRC.judge(tmpPage.pageData, tmpPage.crcCode);
         fileCheckStatus = (fileCheckStatus && pageCheckStatus);
     }
 
