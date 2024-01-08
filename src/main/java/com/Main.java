@@ -7,7 +7,6 @@ import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
@@ -67,11 +66,9 @@ public class Main extends Application {
             // 每个功能对应的按钮种类（"备份", "恢复"）
             String info = leftMenuInfo[i];
             // 创建该功能对应的按钮图片
-//            String imageName = String.format("left%d.png", i);
-//            ImageView imageView = createImageView(imageName, IMAGE_WIDTH_RATIO);
-            String imagePath = String.format("/com/ui/datarestoredemo1/icons/left%d.png", i);
-            URL imageUrl = this.getClass().getResource(imagePath);
-            ImageView imageView = createImageView(imageUrl, IMAGE_WIDTH_RATIO);
+            String imageName = String.format("left%d.png", i);
+            ImageView imageView = createImageView(imageName, IMAGE_WIDTH_RATIO);
+
             // 创建该功能对应的按钮
             Button btn = new Button(info, imageView);
             btn.setContentDisplay(ContentDisplay.TOP);

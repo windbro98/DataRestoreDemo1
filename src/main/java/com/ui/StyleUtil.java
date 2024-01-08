@@ -13,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
@@ -76,7 +77,9 @@ public class StyleUtil {
     // 创建弹窗，提示备份或恢复成功
     protected static void createPopup(String content, StackPane rootSp) throws InterruptedException {
         // 窗口初始化
-        Notification msg = new Notification(content, new FontIcon(POPUP_CHECK_ICON)); // icon
+        // 窗口图标
+        ImageView popupIcon = createImageView("circleCheck.png", BUTTON_ICON_WIDTH_RATIO);
+        Notification msg = new Notification(content, popupIcon);
         msg.getStyleClass().addAll(Styles.ACCENT, Styles.ELEVATED_1); // 风格
         msg.setPrefHeight(Region.USE_PREF_SIZE); // 预设高度
         msg.setMaxHeight(Region.USE_PREF_SIZE); // 最大高度
@@ -181,15 +184,23 @@ public class StyleUtil {
         if(bold)
             text.setFont(Font.font("", FontWeight.BOLD, CONTENT_FONT_SIZE));
         else
-            text.setFont(Font.font("", FontWeight.NORMAL, CONTENT_FONT_SIZE));
+            text.setFont(Font.font("", FontWeight.NORMAL, CONTENT_SMALL_FONT_SIZE));
         // 文本上方填充
         vb.setPadding(new Insets(HEIGHT* PADDING_RATIO *0.5, 0, 0, 0));
         vb.getChildren().add(text);
         return vb;
     }
     // 创建图片组件
-    public static ImageView createImageView(URL imageUrl, double radio){
-        Image image = new Image(imageUrl.getPath().substring(1));
+//    public static ImageView createImageView(URL imageUrl, double radio){
+//        Image image = new Image(imageUrl.getPath().substring(1));
+//        ImageView imageView = new ImageView(image);
+//        imageView.setFitWidth(radio*WIDTH);
+//        imageView.setPreserveRatio(true);
+//        return imageView;
+//    }
+    public static ImageView createImageView(String imageName, double radio){
+        String imagePath = new File(fileConcat(IMAGE_DIR, imageName)).getAbsolutePath();
+        Image image = new Image(imagePath);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(radio*WIDTH);
         imageView.setPreserveRatio(true);
@@ -283,7 +294,10 @@ public class StyleUtil {
     protected static Button createBtnFileChoose(TextInputControl tc, boolean isFile){
         Stage stage = new Stage();
         // 按钮初始化
-        Button btn = new Button("", new FontIcon(BUTTON_FILE_ICON));
+        // 按钮图标
+        ImageView btnImage = createImageView("file.jpg", BUTTON_ICON_WIDTH_RATIO);
+        Button btn = new Button("", btnImage);
+        // 按钮大小
         btn.setPrefWidth(WIDTH* BUTTON_WIDTH_RATIO);
         btn.getStyleClass().addAll(Styles.BUTTON_ICON);
 
