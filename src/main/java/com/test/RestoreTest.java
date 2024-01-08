@@ -27,6 +27,30 @@ import static com.util.FileToolUtil.*;
 
 // 整体功能测试
 public class RestoreTest {
+    @Test // 文件类型检验，检验不同类型的文件恢复的内容是否与源文件一致
+    public void fileTypeTest() throws ReedSolomonException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ClassNotFoundException {
+        String srcDir = "OriginalDataWin\\文件类型";
+        String backDir = "BackupData";
+        String resDir = "RestoreDataWin";
+
+        // 文件恢复
+        fileRestore(srcDir, backDir, resDir);
+        // 文件类型检验
+        fileTypeAssert(srcDir, resDir);
+    }
+
+    @Test // 文件的元数据恢复检验
+    public void fileMetaTest() throws ReedSolomonException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ClassNotFoundException {
+        // 源文件、备份文件和恢复文件目录
+        String srcDir = "OriginalDataWin\\filter\\fileFilter";
+        String backDir = "BackupData";
+        String resDir = "RestoreDataWin";
+
+        // 恢复文件
+        fileRestore(srcDir, backDir, resDir);
+        metaAssert(srcDir, resDir);
+    }
+
     @Test // 文件筛选检验
     public void filterTest() throws IOException, ClassNotFoundException, ParseException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ReedSolomonException, InterruptedException {
         // 源目录、备份目录和恢复目录
@@ -55,27 +79,5 @@ public class RestoreTest {
             verifyFilter(filterType, i);
         }
    }
-    @Test // 文件的元数据恢复检验
-    public void fileMetaTest() throws ReedSolomonException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ClassNotFoundException {
-        // 源文件、备份文件和恢复文件目录
-        String srcDir = "OriginalDataWin\\filter\\fileFilter";
-        String backDir = "BackupData";
-        String resDir = "RestoreDataWin";
 
-        // 恢复文件
-        fileRestore(srcDir, backDir, resDir);
-        metaAssert(srcDir, resDir);
-    }
-
-    @Test // 文件类型检验，检验不同类型的文件恢复的内容是否与源文件一致
-    public void fileTypeTest() throws ReedSolomonException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, IOException, NoSuchAlgorithmException, BadPaddingException, InvalidKeySpecException, InvalidKeyException, ClassNotFoundException {
-        String srcDir = "OriginalDataWin\\文件类型";
-        String backDir = "BackupData";
-        String resDir = "RestoreDataWin";
-
-        // 文件恢复
-        fileRestore(srcDir, backDir, resDir);
-        // 文件类型检验
-        fileTypeAssert(srcDir, resDir);
-    }
 }
