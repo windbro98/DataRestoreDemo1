@@ -88,11 +88,21 @@ public class AES {
                 os.write(output);
             }
         }
-        // 最后一轮解码
-        byte[] outputBytes = cipher.doFinal();
-        if(outputBytes != null){
-            os.write(outputBytes);
+        // 最后一轮解码，错误则直接退出
+        try{
+            byte[] outputBytes = cipher.doFinal();
+            if(outputBytes != null){
+                os.write(outputBytes);
+            }
         }
+        catch (Exception e){
+            // 关闭文件流，删除解密文件
+            is.close();;
+            os.close();
+            deFile.delete();
+            return;
+        }
+
         is.close();
         os.close();
     }

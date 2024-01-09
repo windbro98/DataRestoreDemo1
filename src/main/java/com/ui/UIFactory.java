@@ -142,9 +142,9 @@ public class UIFactory {
                         boolean backFlag = backM.fileExtract(srcM.getFilePathSet(), srcM.getSrcDir());
                         // 提示窗口
                         if(backFlag)
-                            createPopup("文件备份成功", rootSp); // 备份成功
+                            createPopup("文件备份成功", rootSp, true); // 备份成功
                         else
-                            createPopup("文件备份失败！备份目录不存在！", rootSp); // 备份失败
+                            createPopup("文件备份失败！备份目录不存在！", rootSp, false); // 备份失败
                         // 清空文本框，准备下次备份
                         backupClear(tfSrc, tfBackupSave, formatGroup, nameGroup, sizeGroup, createTimeGroup, modifiedTimeGroup,
                                 accessTimeGroup, fileGroup, dirGroup, compressGroup, encryptGroup);
@@ -252,7 +252,7 @@ public class UIFactory {
                     // 备份文件存在性检验
                     if(!backFile.exists()){ // 检验输入的备份文件是否存在，
                         try {
-                            createPopup("恢复失败！备份文件不存在！", rootSp);
+                            createPopup("恢复失败！备份文件不存在！", rootSp, false);
                             return;
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
@@ -260,7 +260,7 @@ public class UIFactory {
                     }
                     else if(!headFile.exists()){ // 检验输入的备份文件是否存在对应的head文件
                         try {
-                            createPopup("恢复失败！备份文件缺乏对应head文件！", rootSp);
+                            createPopup("恢复失败！备份文件缺乏对应head文件！", rootSp, false);
                             return;
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
@@ -284,7 +284,7 @@ public class UIFactory {
                         ArrayList<String> errorFileList = resM.fileRestore(tfBackupRes.getText());
                         if(errorFileList.isEmpty()){ // 无损坏文件
                             // 提示窗口: 恢复成功
-                            createPopup("文件恢复成功", rootSp);
+                            createPopup("文件恢复成功", rootSp, true);
                             tfBackupRes.clear();
                             tfRes.clear();
                         }
@@ -294,15 +294,11 @@ public class UIFactory {
                                 sbErrorFiles.append(errorFile);
                                 sbErrorFiles.append('\n');
                             }
-                            createPopup("出现损坏文件！损坏文件为：\n"+sbErrorFiles, rootSp);
+                            createPopup("出现损坏文件！损坏文件为：\n"+sbErrorFiles, rootSp, false);
                         }
-                    } catch (IOException | InterruptedException | InvalidKeySpecException | InvalidKeyException |
-                             NoSuchAlgorithmException | IllegalBlockSizeException | NoSuchPaddingException |
-                             InvalidAlgorithmParameterException | ReedSolomonException | ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    } catch (BadPaddingException e) {
+                    }catch (Exception e) {
                         try { // 备份文件为加密文件且输入密码错误时，弹窗提示
-                            createPopup("备份文件密码错误！", rootSp);
+                            createPopup("备份文件密码错误！", rootSp, false);
                         } catch (InterruptedException ex) {
                             throw new RuntimeException(ex);
                         }

@@ -63,6 +63,7 @@ public class ResManager {
         this.headMeta = byteArray2intArray(headMetaByte);
         this.compressType = headMeta[0];
         this.encryptType = headMeta[3];
+        is.close();
     }
 
     // 备份文件恢复，返回错误的文件
@@ -92,6 +93,7 @@ public class ResManager {
                 byte[] ivKey = new byte[ivLen + AES.keyLen];
                 System.arraycopy(ivByte, 0, ivKey, 0, ivLen);
                 System.arraycopy(keyByte, 0, ivKey, ivLen, keyLen);
+                // 解密
                 AES.decryptFile(ivKey, backFile, decryptBackFile);
                 // 生成解密文件
                 tmpBackFile = decryptBackFile;

@@ -74,10 +74,14 @@ public class StyleUtil {
     }
 
     // 创建弹窗，提示备份或恢复成功
-    protected static void createPopup(String content, StackPane rootSp) throws InterruptedException {
+    protected static void createPopup(String content, StackPane rootSp, boolean status) throws InterruptedException {
         // 窗口初始化
         // 窗口图标
-        ImageView popupIcon = createImageView("circleCheck.png", BUTTON_ICON_WIDTH_RATIO);
+        ImageView popupIcon;
+        if(status) // 正常状态
+            popupIcon = createImageView("circleCheck.png", BUTTON_ICON_WIDTH_RATIO);
+        else // 异常状态
+            popupIcon = createImageView("error.jpg", BUTTON_ICON_WIDTH_RATIO);
         Notification msg = new Notification(content, popupIcon);
         msg.getStyleClass().addAll(Styles.ACCENT, Styles.ELEVATED_1); // 风格
         msg.setPrefHeight(Region.USE_PREF_SIZE); // 预设高度
